@@ -1,7 +1,6 @@
 /* @jsxImportSource @emotion/react */
 import React, { useCallback, useMemo, useState } from 'react';
-import { SwipeContainer } from './SwipeContainer';
-import { SwipeElement } from './SwipeElement';
+import { SwipeContainer } from './swipe-container';
 
 const plans = [
 	{
@@ -22,20 +21,22 @@ const plans = [
 	},
 ] as const;
 
-export default function App() {
+export const App: React.FC = function App() {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const onChange = useCallback((index: number) => {
 		setCurrentIndex(index);
 	}, []);
-	const elements = useMemo(() => {
-		return plans.map(({ name, price }) => (
-			<div key={name} style={{ width: '200px' }}>
-				{name}
-				<br />
-				{price}
-			</div>
-		));
-	}, []);
+	const elements = useMemo(
+		() =>
+			plans.map(({ name, price }) => (
+				<div key={name} style={{ width: '200px' }}>
+					{name}
+					<br />
+					{price}
+				</div>
+			)),
+		[],
+	);
 
 	return (
 		<div className="App">
@@ -47,4 +48,4 @@ export default function App() {
 			</SwipeContainer>
 		</div>
 	);
-}
+};

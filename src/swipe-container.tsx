@@ -1,25 +1,19 @@
 /* @jsxImportSource @emotion/react */
-import React, { useContext, useMemo, useState } from 'react';
+/* eslint-disable react/no-array-index-key */
+import React, {
+	useMemo,
+	useState,
+	useCallback,
+	useRef,
+	useEffect,
+} from 'react';
 import { css } from '@emotion/react';
-import { useCallback, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useWindowSize } from 'usehooks-ts';
-import { SwipeElement } from './SwipeElement';
+import { SwipeElement } from './swipe-element';
 import { usePrevious } from './hooks';
 
 const SWIPE_SPEED_S = 0.2;
-
-const slides = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-const virtualIndex = 4;
-const index = 0;
-/* when we detect a change
- 1. turn on transition
- 2. do the shift
- 3. wait for complete
- 4. Turn off transition
- 5. Rearrange the virtual list, update virtual index
-    to inside expected range
- */
 
 type SwipeContainerProps = {
 	onChange: (index: number) => void;
@@ -55,7 +49,7 @@ function positionCurrentIndex(
 		return 0;
 	}
 	const wrapperDims = wrapperRef.current.getBoundingClientRect();
-	const containerDims = containerRef.current.getBoundingClientRect();
+	// const containerDims = containerRef.current.getBoundingClientRect();
 	const target = containerRef.current.children[targetIndex];
 	const targetDims = target.getBoundingClientRect();
 	const naturalPosition = (targetIndex + 0.5) * targetDims.width;
@@ -121,14 +115,14 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 		useEffect(() => {
 			if (transitionPhase === 'stopped') {
 				// Update virtual index to match centered element
-				if (virtualIndex < childCount) {
+				if (internalIndex < childCount) {
 					setInternalIndex((v) => v + childCount);
-				} else if (virtualIndex > 2 * childCount) {
+				} else if (internalIndex > 2 * childCount) {
 					setInternalIndex((v) => v - childCount);
 				}
 				setTransitionPhase('rest');
 			}
-		}, [transitionPhase, childCount]);
+		}, [transitionPhase, childCount, internalIndex]);
 		const transition =
 			transitionPhase === 'rest'
 				? 'none'
@@ -198,7 +192,7 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 				}
 				before.push(
 					<SwipeElement
-						key={'virtual-before-' + (childIndex - childCount)}
+						key={`virtual-before-${childIndex - childCount}`}
 						onClick={(): void => {
 							handleChildClick(childIndex);
 						}}
@@ -218,7 +212,7 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 				);
 				after.push(
 					<SwipeElement
-						key={'virtual-after-' + childIndex + childCount}
+						key={`virtual-after-${childIndex}${childCount}`}
 						onClick={(): void => {
 							handleChildClick(childIndex);
 						}}
@@ -250,8 +244,8 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 		console.log({});
 
 		return (
-			// eslint-disable-next-line react/jsx-props-no-spreading
 			<div
+				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...swipeableHandlers}
 				ref={refPassthrough}
 				css={wrapperStyles}
