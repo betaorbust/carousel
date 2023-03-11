@@ -1,5 +1,21 @@
 /* @jsxImportSource @emotion/react */
 /* eslint-disable react/no-array-index-key */
+/**
+ * @fileoverview CarouselContainer
+ * This file creates a swipeable, clickable, carousel that does not itself
+ * hold the state of the current index. As the parent component changes the current
+ * index, the container will animate to that index. It does this by creating a
+ * virtualized list of elements based on the children passed in. There's a
+ * full clone of the child elements put before and after the actual child elements
+ * so we have a visually continuous list of elements so a user can go forward or backwards
+ * without seeing a blank space.
+ *
+ * When the current index changes, this element will find the desired direction and add
+ * that to a desired offset. While the desired offset is not 0, it moves it 1 closer to
+ * 0 and triggers a shift animation. This lets us stack up multiple moves and play them
+ * one after another until we get to the final targe -- so a user can swipe faster than
+ * we animate.
+ */
 import React, {
 	useMemo,
 	useState,
@@ -10,12 +26,12 @@ import React, {
 import { css } from '@emotion/react';
 import { useSwipeable } from 'react-swipeable';
 import { useWindowSize } from 'usehooks-ts';
-import { SwipeElement } from './swipe-element';
+import { CarouselElement } from './carousel-element';
 import { usePrevious } from './hooks';
 
 const SWIPE_SPEED_S = 0.2;
 
-type SwipeContainerProps = {
+type CarouselContainerProps = {
 	onChange: (index: number) => void;
 	currentIndex: number;
 	children: React.ReactNode;
@@ -28,7 +44,7 @@ const wrapperStyles = css`
 	overflow: hidden;
 `;
 
-const containerStyles = css`
+const shifterStyles = css`
 	display: flex;
 	border: solid 1px red;
 	position: absolute;
@@ -49,7 +65,6 @@ function positionCurrentIndex(
 		return 0;
 	}
 	const wrapperDims = wrapperRef.current.getBoundingClientRect();
-	// const containerDims = containerRef.current.getBoundingClientRect();
 	const target = containerRef.current.children[targetIndex];
 	const targetDims = target.getBoundingClientRect();
 	const naturalPosition = (targetIndex + 0.5) * targetDims.width;
@@ -57,29 +72,33 @@ function positionCurrentIndex(
 	return offset;
 }
 
-export const SwipeContainer: React.FC<SwipeContainerProps> =
-	function SwipeContainer({ onChange, children, currentIndex }) {
-		const outsideRef = useRef<HTMLDivElement | null>(null);
-		const containerRef = useRef<HTMLDivElement | null>(null);
+export const CarouselContainer: React.FC<CarouselContainerProps> =
+	function CarouselContainer({ onChange, children, currentIndex }) {
+		const wrapperRef = useRef<HTMLDivElement | null>(null);
+		const shifterRef = useRef<HTMLDivElement | null>(null);
 		const childCount = React.Children.count(children);
 		// Tracks how far we have to go.
 		const [desiredOffset, setDesiredOffset] = useState(0);
 		const [transitionPhase, setTransitionPhase] = useState<
-			'rest' | 'moving' | 'stopped'
+			'rest' | 'move' | 'reconcile'
 		>('rest');
 		// This is in the virtualized list, so we start out childIndex offset
 		// because we have a copy of all elements in front of us
 		const [internalIndex, setInternalIndex] = useState(
 			currentIndex + childCount,
 		);
-		const [, setInitialMount] = useState(false);
+		const unsafePreviousIndex = usePrevious(currentIndex);
+		const previousIndex = unsafePreviousIndex ?? currentIndex;
 
-		const previousIndex = usePrevious(currentIndex) || currentIndex;
+		// Re-render on window sizing changes.
+		useWindowSize();
 
+		// Calculate and set updated desiredOffset, which will be
+		// shifted towards 0 as animations complete.
 		useEffect(() => {
 			// If we're wrapping around from end to start
 			if (currentIndex - previousIndex < -1) {
-				// Use the first one of the virutual list
+				// Use the first one of the virtual list
 				setDesiredOffset((d) => d + 1);
 			}
 			// If we're wrapping from start to end
@@ -92,13 +111,14 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 			}
 		}, [currentIndex, previousIndex]);
 
-		// Handle if we have outstanding desiredOffsets
+		// If there are desiredOffsets, move them towards 0 by triggering
+		// a single animation shift.
 		useEffect(() => {
 			if (desiredOffset === 0 || transitionPhase !== 'rest') {
 				return;
 			}
 			// We're going to move!
-			setTransitionPhase('moving');
+			setTransitionPhase('move');
 			if (desiredOffset > 0) {
 				setInternalIndex((vi) => vi + 1);
 				setDesiredOffset((d) => d - 1);
@@ -108,48 +128,31 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 			}
 			// Clean up after we're done with the transition
 			window.setTimeout(() => {
-				setTransitionPhase('stopped');
+				setTransitionPhase('reconcile');
 			}, SWIPE_SPEED_S * 1000);
 		}, [desiredOffset, transitionPhase]);
 
 		useEffect(() => {
-			if (transitionPhase === 'stopped') {
+			if (transitionPhase === 'reconcile') {
 				// Update virtual index to match centered element
 				if (internalIndex < childCount) {
 					setInternalIndex((v) => v + childCount);
-				} else if (internalIndex > 2 * childCount) {
+				} else if (internalIndex >= 2 * childCount) {
 					setInternalIndex((v) => v - childCount);
 				}
 				setTransitionPhase('rest');
 			}
 		}, [transitionPhase, childCount, internalIndex]);
-		const transition =
-			transitionPhase === 'rest'
-				? 'none'
-				: `transform ${SWIPE_SPEED_S}s ease-out`;
-
-		// Re-render on window sizing changes.
-		useWindowSize();
-
-		const moveIndexWithWrap = useCallback(
-			(totalChildren: number, incrementBy: number) => {
-				onChange(
-					(currentIndex + totalChildren + incrementBy) %
-						totalChildren,
-				);
-			},
-			[currentIndex, onChange],
-		);
 
 		// Things to do when a user swipes
 		const swipeableHandlers = useSwipeable({
 			onSwipedLeft: () => {
-				console.log('swiped left!');
-				moveIndexWithWrap(childCount, 1);
+				// Wrap around if needed
+				onChange((currentIndex + childCount + 1) % childCount);
 			},
 			onSwipedRight: () => {
-				console.log('swiped right!');
-				moveIndexWithWrap(childCount, -1);
+				// Wrap around if needed
+				onChange((currentIndex + childCount - 1) % childCount);
 			},
 			swipeDuration: 500,
 			touchEventOptions: { passive: false },
@@ -159,29 +162,21 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 
 		// The swiper mechanism uses its own ref, so we're
 		// using a callback ref to get ahold of it and
-		// asign that ref to our own outsideRef so we can
+		// assign that ref to our own outsideRef so we can
 		// apply styles etc. to it.
 		const refPassthrough = useCallback(
 			(el: HTMLDivElement) => {
-				console.log('refpassthrough was different');
 				// call useSwipeables ref prop with el
 				swipeableHandlers.ref(el);
 				// set the el to a ref you can access yourself
-				outsideRef.current = el;
+				wrapperRef.current = el;
 			},
 			[swipeableHandlers],
 		);
 
-		// When the user clicks directly on one of the children
-		// we want to switch to that directly
-		const handleChildClick = useCallback(
-			(nextIndex: number) => {
-				console.log('clicked!', nextIndex);
-				onChange(nextIndex);
-			},
-			[onChange],
-		);
-
+		// Build out a virtual list of children where we have a virtual set of
+		// children before and after the actual children. This allows us to
+		// virtualize the infinite scroll.
 		const wrappedChildren = useMemo(() => {
 			const before: Array<React.ReactElement> = [];
 			const content: Array<React.ReactElement> = [];
@@ -191,69 +186,69 @@ export const SwipeContainer: React.FC<SwipeContainerProps> =
 					return;
 				}
 				before.push(
-					<SwipeElement
-						key={`virtual-before-${childIndex - childCount}`}
+					<CarouselElement
+						key={`before-${childIndex}${childCount}`}
 						onClick={(): void => {
-							handleChildClick(childIndex);
+							onChange(childIndex);
 						}}
 					>
 						{React.cloneElement(child)}
-					</SwipeElement>,
+					</CarouselElement>,
 				);
 				content.push(
-					<SwipeElement
+					<CarouselElement
 						key={childIndex}
 						onClick={(): void => {
-							handleChildClick(childIndex);
+							onChange(childIndex);
 						}}
 					>
-						{React.cloneElement(child)}
-					</SwipeElement>,
+						{child}
+					</CarouselElement>,
 				);
 				after.push(
-					<SwipeElement
-						key={`virtual-after-${childIndex}${childCount}`}
+					<CarouselElement
+						key={`after-${childIndex}${childCount}`}
 						onClick={(): void => {
-							handleChildClick(childIndex);
+							onChange(childIndex);
 						}}
 					>
 						{React.cloneElement(child)}
-					</SwipeElement>,
+					</CarouselElement>,
 				);
 			});
 			return [...before, ...content, ...after];
-		}, [children, childCount, handleChildClick]);
+		}, [children, childCount, onChange]);
 
 		const transform = `translateX(${positionCurrentIndex(
 			internalIndex,
-			containerRef,
-			outsideRef,
+			shifterRef,
+			wrapperRef,
 		)}px)`;
 
-		// Because this depends on measuring the actual layout of
-		// the
-		useEffect(() => {
-			// This won't match the server, so to
-			// suppress the warnings about not matching
-			// on hydration, we're updating it in a setTimeout
-			window.setTimeout(() => {
-				setInitialMount(true);
-			}, 1);
-		}, []);
-
-		console.log({});
+		const transition =
+			transitionPhase === 'rest'
+				? 'none'
+				: `transform ${SWIPE_SPEED_S}s ease-out`;
 
 		return (
 			<div
+				// This entire component is hidden from screen readers and keyboard
+				// navigation because the infinite virtual list of buttons is a terrible
+				// user experience. Instead, the lower carousel navigation is focusable
+				// and aria labels that match the contents of this component's children.
+				aria-hidden
 				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...swipeableHandlers}
 				ref={refPassthrough}
 				css={wrapperStyles}
 			>
 				<div
-					ref={containerRef}
-					css={containerStyles}
-					style={{ transition, transform }}
+					ref={shifterRef}
+					css={shifterStyles}
+					style={{
+						transition,
+						transform,
+					}}
 				>
 					{wrappedChildren}
 				</div>

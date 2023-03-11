@@ -4,7 +4,7 @@ module.exports = {
 	parserOptions: { tsconfigRootDir: __dirname },
 	rules: {
 		'import/prefer-default-export': 'off',
-		'no-console': 'off',
+		// 'no-console': 'off',
 		'react/no-unknown-property': ['error', { ignore: ['css'] }],
 	},
 };

@@ -1,28 +1,29 @@
 /* @jsxImportSource @emotion/react */
 import React, { useCallback, useMemo, useState } from 'react';
-import { SwipeContainer } from './swipe-container';
+import { CarouselContainer } from './carousel-container';
+import { CarouselControls } from './carousel-controls';
 
 const plans = [
 	{
-		name: 'Crunch Wrap Supreme',
+		name: '0. Crunch Wrap Supreme',
 		price: '$40.00',
 	},
 	{
-		name: 'Family but not all your family',
+		name: '1. Family but not all your family',
 		price: '$20.00',
 	},
 	{
-		name: 'Jr. One Bedroom',
+		name: '2. Jr. One Bedroom',
 		price: '$10.00',
 	},
 	{
-		name: `Please don't pick this one`,
+		name: `3. Please don't pick this one`,
 		price: '$5.99',
 	},
 ] as const;
 
 export const App: React.FC = function App() {
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const [currentIndex, setCurrentIndex] = useState(2);
 	const onChange = useCallback((index: number) => {
 		setCurrentIndex(index);
 	}, []);
@@ -40,12 +41,17 @@ export const App: React.FC = function App() {
 
 	return (
 		<div className="App">
-			<h1>Slider demo</h1>
+			<h1>Carousel demo</h1>
 			<div>Current selection {currentIndex}</div>
 			<br />
-			<SwipeContainer onChange={onChange} currentIndex={currentIndex}>
+			<CarouselContainer onChange={onChange} currentIndex={currentIndex}>
 				{elements}
-			</SwipeContainer>
+			</CarouselContainer>
+			<CarouselControls
+				indexLabels={plans.map(({ name }) => name)}
+				onChange={onChange}
+				currentIndex={currentIndex}
+			/>
 		</div>
 	);
 };
