@@ -8,5 +8,16 @@
   "bracketSpacing": true,
   "jsxBracketSameLine": true,
   "fluid": false,
-  "arrowParens": "always"
+  "arrowParens": "always",
+  "proseWrap": "always",
+  "htmlWhitespaceSensitivity": "css",
+  "vueIndentScriptAndStyle": true,
+  "overrides": [
+    {
+      "files": "*.md",
+      "options": {
+        "proseWrap": "preserve"
+      }
+    }
+  ]
 }
