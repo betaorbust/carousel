@@ -23,7 +23,7 @@ const plans = [
 ] as const;
 
 export const App: React.FC = function App() {
-	const [currentIndex, setCurrentIndex] = useState(2);
+	const [currentIndex, setCurrentIndex] = useState(0);
 	const onChange = useCallback((index: number) => {
 		setCurrentIndex(index);
 	}, []);

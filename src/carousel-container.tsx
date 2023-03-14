@@ -72,6 +72,27 @@ function positionCurrentIndex(
 	return offset;
 }
 
+// Given an incoming index, the previous index, and the total number of children,
+// return the offset that, including wrapping, gets us to the incoming index.
+function findNearest(next: number, previous: number, total: number): number {
+	const difference = next - previous;
+
+	// If we have a positive difference, we're moving forward.
+	if (difference >= 0) {
+		// So try going backwards to see if that's closer
+		const wrappedDifference = -total + difference;
+		return Math.abs(difference) < Math.abs(wrappedDifference)
+			? difference
+			: wrappedDifference;
+	}
+	// Otherwise we're going backwards, so try going forwards
+	// to see if that's closer
+	const wrappedDifference = total + difference;
+	return Math.abs(difference) < Math.abs(wrappedDifference)
+		? difference
+		: wrappedDifference;
+}
+
 export const CarouselContainer: React.FC<CarouselContainerProps> =
 	function CarouselContainer({ onChange, children, currentIndex }) {
 		const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -96,20 +117,10 @@ export const CarouselContainer: React.FC<CarouselContainerProps> =
 		// Calculate and set updated desiredOffset, which will be
 		// shifted towards 0 as animations complete.
 		useEffect(() => {
-			// If we're wrapping around from end to start
-			if (currentIndex - previousIndex < -1) {
-				// Use the first one of the virtual list
-				setDesiredOffset((d) => d + 1);
-			}
-			// If we're wrapping from start to end
-			else if (currentIndex - previousIndex > 1) {
-				setDesiredOffset((d) => d - 1);
-			}
-			// Otherwise just note that we want to shift over one
-			else {
-				setDesiredOffset((d) => d + (currentIndex - previousIndex));
-			}
-		}, [currentIndex, previousIndex]);
+			setDesiredOffset(
+				(d) => d + findNearest(currentIndex, previousIndex, childCount),
+			);
+		}, [currentIndex, previousIndex, childCount]);
 
 		// If there are desiredOffsets, move them towards 0 by triggering
 		// a single animation shift.
@@ -129,7 +140,7 @@ export const CarouselContainer: React.FC<CarouselContainerProps> =
 			// Clean up after we're done with the transition
 			window.setTimeout(() => {
 				setTransitionPhase('reconcile');
-			}, SWIPE_SPEED_S * 1000);
+			}, SWIPE_SPEED_S * 1000 + 50); // Adding 50ms to make sure we're done
 		}, [desiredOffset, transitionPhase]);
 
 		useEffect(() => {
