@@ -14,7 +14,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> =
 					onClick={(): void =>
 						onChange(
 							currentIndex <= 0
-								? indexLabels.length
+								? indexLabels.length - 1
 								: currentIndex - 1,
 						)
 					}
