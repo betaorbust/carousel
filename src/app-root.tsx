@@ -16,6 +16,7 @@ const globalStyles = css`
 const appStyles = css`
 	margin: 0 auto;
 	max-width: 700px;
+	color: #333;
 `;
 
 const elementStyles = css`
@@ -26,8 +27,7 @@ const elementStyles = css`
 	border: solid 1px gray;
 	border-radius: 25px;
 	box-sizing: border-box;
-	height: 100%;
-	margin: 0 5px;
+	margin: 5px 5px;
 `;
 
 const plans = [

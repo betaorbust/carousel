@@ -8,16 +8,52 @@ type CarouselControlsTypes = {
 	currentIndex: number;
 };
 
+const containerStyles = css`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+`;
+
 const controlsStyles = css`
 	background: none;
 	border: none;
-	font-size: 1.4rem;
+	font-size: 1.5rem;
+	padding: 0.5rem 0.7rem;
+	margin: 0;
+	color: #333;
+	transition: font-size 0.2s ease-in-out;
+	height: 3rem;
+	&:last-child {
+		margin-left: 1rem;
+	}
+	&:first-child {
+		margin-right: 1rem;
+	}
+	display: flex;
+	align-items: center;
+`;
+
+const selectedStyle = css`
+	background-color: rebeccapurple;
+	height: 1.5rem;
+	width: 1.5rem;
+`;
+
+const indicatorStyles = css`
+	display: inline-block;
+	height: 1.1rem;
+	width: 1.1rem;
+	border: solid 2px #555;
+	background-color: none;
+	border-radius: 50%;
+	transition: background-color 0.2s ease-in-out, height 0.2s ease-in-out,
+		width 0.2s ease-in-out;
 `;
 
 export const CarouselControls: React.FC<CarouselControlsTypes> =
 	function CarouselControls({ indexLabels, onChange, currentIndex }) {
 		return (
-			<div>
+			<div css={containerStyles}>
 				<button
 					css={controlsStyles}
 					type="button"
@@ -33,13 +69,18 @@ export const CarouselControls: React.FC<CarouselControlsTypes> =
 				</button>
 				{indexLabels.map((label, index) => (
 					<button
-						css={controlsStyles}
+						css={[controlsStyles]}
 						type="button"
 						title={label}
 						key={label}
 						onClick={(): void => onChange(index)}
 					>
-						{index === currentIndex ? '●' : '○'}
+						<span
+							css={[
+								indicatorStyles,
+								index === currentIndex ? selectedStyle : null,
+							]}
+						/>
 					</button>
 				))}
 				<button
