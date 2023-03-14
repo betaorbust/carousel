@@ -39,17 +39,11 @@ type CarouselContainerProps = {
 
 const wrapperStyles = css`
 	position: relative;
-	border: solid 5px green;
-	min-height: 200px;
 	overflow: hidden;
 `;
 
 const shifterStyles = css`
 	display: flex;
-	border: solid 1px red;
-	position: absolute;
-	left: 0px;
-	height: 100%;
 `;
 
 // Given a set of equally sized children,

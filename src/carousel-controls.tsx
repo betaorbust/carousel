@@ -1,3 +1,5 @@
+/* @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
 import React from 'react';
 
 type CarouselControlsTypes = {
@@ -5,11 +7,19 @@ type CarouselControlsTypes = {
 	onChange: (index: number) => void;
 	currentIndex: number;
 };
+
+const controlsStyles = css`
+	background: none;
+	border: none;
+	font-size: 1.4rem;
+`;
+
 export const CarouselControls: React.FC<CarouselControlsTypes> =
 	function CarouselControls({ indexLabels, onChange, currentIndex }) {
 		return (
 			<div>
 				<button
+					css={controlsStyles}
 					type="button"
 					onClick={(): void =>
 						onChange(
@@ -23,6 +33,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> =
 				</button>
 				{indexLabels.map((label, index) => (
 					<button
+						css={controlsStyles}
 						type="button"
 						title={label}
 						key={label}
@@ -32,6 +43,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> =
 					</button>
 				))}
 				<button
+					css={controlsStyles}
 					type="button"
 					onClick={(): void =>
 						onChange(

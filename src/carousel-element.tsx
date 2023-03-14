@@ -8,9 +8,8 @@ type CarouselElementProps = {
 };
 
 const elementStyle = css`
-	height: 100%;
+	align-items: stretch;
 	flex: 1 1 auto;
-	border: solid 1px rebeccapurple;
 `;
 
 export const CarouselElement: React.FC<CarouselElementProps> =
