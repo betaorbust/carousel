@@ -1,8 +1,7 @@
 /* @jsxImportSource @emotion/react */
 import React, { useCallback, useMemo, useState } from 'react';
 import { css, Global } from '@emotion/react';
-import { CarouselContainer } from './carousel-container';
-import { CarouselControls } from './carousel-controls';
+import { Carousel, CarouselItem, CarouselControls } from './carousel';
 
 const globalStyles = css`
 	* {
@@ -36,7 +35,7 @@ const plans = [
 		price: '$40.00',
 	},
 	{
-		name: '1. Family but not all your family',
+		name: '1. Family but not for Mark',
 		price: '$20.00',
 	},
 	{
@@ -49,20 +48,22 @@ const plans = [
 	},
 ] as const;
 
-export const App: React.FC = function App() {
+export const App: React.FC = () => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const onChange = useCallback((index: number) => {
 		setCurrentIndex(index);
 	}, []);
-	const elements = useMemo(
+	const elements: React.ReactElement[] = useMemo(
 		() =>
 			plans.map(({ name, price }) => (
-				<div key={name} css={elementStyles}>
-					<div>
-						<h3>{name}</h3>
-						<sub>{price}</sub>
+				<CarouselItem key={name}>
+					<div css={elementStyles}>
+						<div>
+							<h3>{name}</h3>
+							<sub>{price}</sub>
+						</div>
 					</div>
-				</div>
+				</CarouselItem>
 			)),
 		[],
 	);
@@ -75,12 +76,12 @@ export const App: React.FC = function App() {
 				<div>Current selection {currentIndex}</div>
 				<br />
 				<div style={{ border: 'dashed 2px gray' }}>
-					<CarouselContainer
-						onChange={onChange}
+					<Carousel
+						onClickIndex={onChange}
 						currentIndex={currentIndex}
 					>
 						{elements}
-					</CarouselContainer>
+					</Carousel>
 				</div>
 				<div style={{ margin: '10px auto', textAlign: 'center' }}>
 					<CarouselControls
