@@ -13,6 +13,7 @@ module.exports = {
 				unnamedComponents: 'arrow-function',
 			},
 		],
+		'react/no-unescaped-entities': 'off',
 	},
 	overrides: [
 		{
