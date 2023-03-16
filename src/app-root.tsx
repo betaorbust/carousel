@@ -1,7 +1,15 @@
 /* @jsxImportSource @emotion/react */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { css, Global } from '@emotion/react';
+import TinySlider, { TinySliderProps } from 'tiny-slider-react';
 import { Carousel, CarouselItem, CarouselControls } from './carousel';
+import 'tiny-slider/dist/tiny-slider.css';
 
 const globalStyles = css`
 	* {
@@ -27,7 +35,19 @@ const elementStyles = css`
 	border-radius: 25px;
 	box-sizing: border-box;
 	margin: 5px 5px;
+	transition: transform 0.2s ease-in-out;
+	.current & {
+		transform: scale(1.1);
+	}
 `;
+
+const tinySliderSettings: TinySliderProps['settings'] = {
+	mouseDrag: true,
+	nav: true,
+	// @ts-expect-error - types not up to date
+	center: true,
+	items: 3.5,
+};
 
 const plans = [
 	{
@@ -53,10 +73,11 @@ export const App: React.FC = () => {
 	const onChange = useCallback((index: number) => {
 		setCurrentIndex(index);
 	}, []);
-	const elements: React.ReactElement[] = useMemo(
+	const tinySliderRef = useRef<TinySlider | null>(null);
+	const initialDemoElements: React.ReactElement[] = useMemo(
 		() =>
 			plans.map(({ name, price }) => (
-				<CarouselItem key={name}>
+				<CarouselItem key={name} itemKey={name}>
 					<div css={elementStyles}>
 						<div>
 							<h3>{name}</h3>
@@ -68,19 +89,50 @@ export const App: React.FC = () => {
 		[],
 	);
 
+	const tinySliderElements: React.ReactElement[] = useMemo(
+		() =>
+			plans.map(({ name, price }, index) => (
+				<div
+					aria-hidden
+					// eslint-disable-next-line react/no-array-index-key
+					key={index}
+					style={{ position: 'relative' }}
+					onClick={(): void => {
+						if (tinySliderRef.current) {
+							// @ts-expect-error - whaa
+							tinySliderRef.current.slider.goTo(index);
+						}
+					}}
+				>
+					<h3>{name}</h3>
+					<sub>{price}</sub>
+				</div>
+			)),
+		[],
+	);
+
+	useEffect(() => {
+		if (tinySliderRef.current) {
+			// @ts-expect-error - whaa
+			tinySliderRef.current.slider.goTo(currentIndex);
+		}
+	}, [currentIndex]);
+
 	return (
 		<>
 			<Global styles={globalStyles} />
 			<div className="App" css={appStyles}>
-				<h1>Carousel demo</h1>
+				<h1>Carousel Demos</h1>
+
 				<div>Current selection {currentIndex}</div>
+				<h2>Initial Carousel Demo</h2>
 				<br />
 				<div style={{ border: 'dashed 2px gray' }}>
 					<Carousel
 						onClickIndex={onChange}
 						currentIndex={currentIndex}
 					>
-						{elements}
+						{initialDemoElements}
 					</Carousel>
 				</div>
 				<div style={{ margin: '10px auto', textAlign: 'center' }}>
@@ -93,6 +145,16 @@ export const App: React.FC = () => {
 						currentIndex={currentIndex}
 					/>
 				</div>
+				<h2>Tiny Slider Demo</h2>
+
+				<TinySlider
+					settings={tinySliderSettings}
+					ref={(el): void => {
+						tinySliderRef.current = el;
+					}}
+				>
+					{tinySliderElements}
+				</TinySlider>
 			</div>
 		</>
 	);

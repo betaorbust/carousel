@@ -6,6 +6,7 @@ import { CarouselItemProps } from './carousel-item';
 type CarouselElementWrapperProps = {
 	children: React.ReactNode;
 	onClick: React.MouseEventHandler<HTMLDivElement>;
+	isCurrent: boolean;
 };
 
 const elementStyle = css`
@@ -16,8 +17,14 @@ const elementStyle = css`
 const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 	children,
 	onClick,
+	isCurrent,
 }) => (
-	<div aria-hidden onClick={onClick} css={elementStyle}>
+	<div
+		aria-hidden
+		className={isCurrent ? 'current' : undefined}
+		onClick={onClick}
+		css={elementStyle}
+	>
 		{children}
 	</div>
 );
@@ -25,11 +32,12 @@ const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 type CarouselVirtualizedListProps = {
 	children: React.ReactElement<CarouselItemProps>[];
 	onClickIndex: (index: number) => void;
+	currentOverallIndex: number;
 };
 
 export const CarouselVirtualizedList: React.FC<
 	CarouselVirtualizedListProps
-> = ({ children, onClickIndex }) => {
+> = ({ children, onClickIndex, currentOverallIndex }) => {
 	const before: Array<React.ReactElement> = [];
 	const real: Array<React.ReactElement> = [];
 	const after: Array<React.ReactNode> = [];
@@ -38,10 +46,13 @@ export const CarouselVirtualizedList: React.FC<
 		if (!React.isValidElement(child)) {
 			return;
 		}
+		// eslint-disable-next-line no-console -- devug
+		console.log({ currentOverallIndex, childIndex });
 		const key = child.key || `${childIndex}-${childCount}`;
 		before.push(
 			<CarouselElementWrapper
 				key={`before-${key}`}
+				isCurrent={currentOverallIndex === childIndex}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
@@ -52,6 +63,7 @@ export const CarouselVirtualizedList: React.FC<
 		real.push(
 			<CarouselElementWrapper
 				key={key}
+				isCurrent={currentOverallIndex === childIndex + childCount}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
@@ -62,6 +74,7 @@ export const CarouselVirtualizedList: React.FC<
 		after.push(
 			<CarouselElementWrapper
 				key={`after-${key}`}
+				isCurrent={currentOverallIndex === childIndex + childCount * 2}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}

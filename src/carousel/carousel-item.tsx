@@ -3,14 +3,14 @@ import React from 'react';
 
 export type CarouselItemProps = {
 	children: React.ReactNode;
-	key: string;
+	itemKey: string;
 };
 
 export const CarouselItem: React.FC<CarouselItemProps> = ({
 	children,
-	key,
+	itemKey,
 }) => (
-	<div aria-hidden key={key}>
+	<div aria-hidden key={itemKey}>
 		{children}
 	</div>
 );

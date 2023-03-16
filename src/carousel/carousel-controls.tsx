@@ -23,10 +23,10 @@ const controlsStyles = css`
 	color: #333;
 	transition: font-size 0.2s ease-in-out;
 	height: 3rem;
-	&:last-child {
+	&:last-of-type {
 		margin-left: 1rem;
 	}
-	&:first-child {
+	&:first-of-type {
 		margin-right: 1rem;
 	}
 	display: flex;

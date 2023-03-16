@@ -4,7 +4,7 @@ module.exports = {
 	parserOptions: { tsconfigRootDir: __dirname },
 	rules: {
 		'import/prefer-default-export': 'off',
-		// 'no-console': 'off',
+		'no-console': 'off',
 		'react/no-unknown-property': ['error', { ignore: ['css'] }],
 		'react/function-component-definition': [
 			'error',
@@ -14,4 +14,15 @@ module.exports = {
 			},
 		],
 	},
+	overrides: [
+		{
+			files: ['*.test.ts', '*.test.tsx'],
+			rules: {
+				'import/no-extraneous-dependencies': [
+					'error',
+					{ devDependencies: ['**/*.test.ts', '**/*.test.tsx'] },
+				],
+			},
+		},
+	],
 };

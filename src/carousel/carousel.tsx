@@ -146,11 +146,14 @@ export const Carousel: React.FC<CarouselProps> = ({
 	// virtualize the infinite scroll.
 	const wrappedChildren = useMemo(
 		() => (
-			<CarouselVirtualizedList onClickIndex={onChange}>
+			<CarouselVirtualizedList
+				onClickIndex={onChange}
+				currentOverallIndex={internalIndex}
+			>
 				{children}
 			</CarouselVirtualizedList>
 		),
-		[children, onChange],
+		[children, onChange, internalIndex],
 	);
 
 	const transform = `translateX(${positionCurrentIndex(
