@@ -102,11 +102,11 @@ export const Carousel: React.FC<CarouselProps> = ({
 	useEffect(() => {
 		if (transitionPhase === 'reconcile') {
 			// Update virtual index to match centered element
-			if (internalIndex < childCount) {
-				setInternalIndex((v) => v + childCount);
-			} else if (internalIndex >= 2 * childCount) {
-				setInternalIndex((v) => v - childCount);
-			}
+			// if (internalIndex < childCount) {
+			// 	setInternalIndex((v) => v + childCount);
+			// } else if (internalIndex >= 2 * childCount) {
+			// 	setInternalIndex((v) => v - childCount);
+			// }
 			setTransitionPhase('rest');
 		}
 	}, [transitionPhase, childCount, internalIndex]);
@@ -158,6 +158,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 
 	const transform = `translateX(${positionCurrentIndex(
 		internalIndex,
+		childCount,
 		shifterRef,
 		wrapperRef,
 	)}px)`;

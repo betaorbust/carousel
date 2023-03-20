@@ -8,12 +8,54 @@ export function usePrevious<T>(value: T): T | undefined {
 	return ref.current; // in the end, return the current ref value.
 }
 
+// Get the layout start of the real set of elements (not the phantom ones)
+export function getLayoutStart(
+	virtualIndex: number,
+	totalRealChildren: number,
+): number {
+	return 3;
+	// Get the starting point of the current set of elements
+	if (virtualIndex < 0) {
+		return (
+			virtualIndex -
+			(virtualIndex % totalRealChildren) -
+			// Shift over by one set of elements if we're in negative territory
+			totalRealChildren
+		);
+	}
+
+	console.log(
+		`returning ${totalRealChildren + (virtualIndex % totalRealChildren)}`,
+	);
+	return totalRealChildren + (virtualIndex % totalRealChildren);
+}
+
+// Get the laid out DOM index for a given virtual index
+export function getRealIndexFromVirtual(
+	virtualIndex: number,
+	totalRealChildren: number,
+): number {
+	const realStartIndex = getLayoutStart(virtualIndex, totalRealChildren);
+	if (realStartIndex < 0) {
+		// One set of phantom elements at the start and then the real elements
+		// after that, but flipped because we're in negative territory.
+		return (
+			totalRealChildren +
+			totalRealChildren -
+			(-virtualIndex % totalRealChildren)
+		);
+	}
+	// console.log({ totalRealChildren, realStartIndex, virtualIndex });
+	return realStartIndex + (virtualIndex % totalRealChildren);
+}
+
 // Given a set of equally sized children,
 // position the target index in the middle of
 // wrapper by returning an offset for the
 // container element.
 export function positionCurrentIndex(
-	targetIndex: number,
+	virtualIndex: number,
+	totalRealChildren: number,
 	containerRef: React.RefObject<HTMLDivElement>,
 	wrapperRef: React.RefObject<HTMLDivElement>,
 ): number {
@@ -21,13 +63,25 @@ export function positionCurrentIndex(
 		return 0;
 	}
 	const wrapperDims = wrapperRef.current.getBoundingClientRect();
-	const target = containerRef.current.children[targetIndex];
+	const laidOutIndex = getRealIndexFromVirtual(
+		virtualIndex,
+		totalRealChildren,
+	);
+	console.log({ laidOutIndex, virtualIndex });
+	const target = containerRef.current.children[laidOutIndex];
 	if (!target) {
 		return 0;
 	}
 	const targetDims = target.getBoundingClientRect();
-	const naturalPosition = (targetIndex + 0.5) * targetDims.width;
+	// 0.5 gives us the center
+	const naturalPosition = (laidOutIndex + 0.5) * targetDims.width;
 	const offset = wrapperDims.width / 2 - naturalPosition;
+	console.log({
+		naturalPosition,
+		offset,
+		wrapperWidth: wrapperDims.width,
+		targetWidth: targetDims.width,
+	});
 	return offset;
 }
 

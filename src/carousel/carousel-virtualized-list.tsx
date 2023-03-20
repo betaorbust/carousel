@@ -2,11 +2,13 @@
 import { css } from '@emotion/react';
 import React from 'react';
 import { CarouselItemProps } from './carousel-item';
+import { getLayoutStart } from './helpers';
 
 type CarouselElementWrapperProps = {
 	children: React.ReactNode;
 	onClick: React.MouseEventHandler<HTMLDivElement>;
 	isCurrent: boolean;
+	identifier: string;
 };
 
 const elementStyle = css`
@@ -18,9 +20,11 @@ const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 	children,
 	onClick,
 	isCurrent,
+	identifier,
 }) => (
 	<div
 		aria-hidden
+		data-carousel-id={identifier}
 		className={isCurrent ? 'current' : undefined}
 		onClick={onClick}
 		css={elementStyle}
@@ -42,43 +46,62 @@ export const CarouselVirtualizedList: React.FC<
 	const real: Array<React.ReactElement> = [];
 	const after: Array<React.ReactNode> = [];
 	const childCount = React.Children.count(children);
+
+	// where we start to lay the primary elements out
+	// const layoutStartIndex = getLayoutStart(currentOverallIndex, childCount);
+	const layoutStartIndex = childCount;
 	React.Children.forEach(children, (child, childIndex) => {
 		if (!React.isValidElement(child)) {
 			return;
 		}
-		// eslint-disable-next-line no-console -- devug
-		console.log({ currentOverallIndex, childIndex });
-		const key = child.key || `${childIndex}-${childCount}`;
+		let { key: childKey } = child;
+		if (!childKey) {
+			console.error('Key required for animation.');
+			childKey = `key-${childIndex}`;
+		}
+		const elementIndex = layoutStartIndex + childIndex;
+		const beforeId = `${childKey}:${elementIndex - childCount}`;
+		const id = `${childKey}:${elementIndex}`;
+		const afterId = `${childKey}:${elementIndex + childCount}`;
 		before.push(
 			<CarouselElementWrapper
-				key={`before-${key}`}
-				isCurrent={currentOverallIndex === childIndex}
+				// One element set offset to negative
+				key={beforeId}
+				identifier={beforeId}
+				isCurrent={false}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
 			>
+				{beforeId}
 				{React.cloneElement(child)}
 			</CarouselElementWrapper>,
 		);
 		real.push(
 			<CarouselElementWrapper
-				key={key}
-				isCurrent={currentOverallIndex === childIndex + childCount}
+				// The centered element
+				key={id}
+				identifier={id}
+				isCurrent={currentOverallIndex === elementIndex}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
 			>
+				{`${childKey}-${elementIndex}`}
 				{child}
 			</CarouselElementWrapper>,
 		);
 		after.push(
 			<CarouselElementWrapper
-				key={`after-${key}`}
-				isCurrent={currentOverallIndex === childIndex + childCount * 2}
+				// One element set offset to positive
+				key={afterId}
+				identifier={afterId}
+				isCurrent={false}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
 			>
+				{afterId}
 				{React.cloneElement(child)}
 			</CarouselElementWrapper>,
 		);

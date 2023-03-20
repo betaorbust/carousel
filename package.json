@@ -39,6 +39,7 @@
 		"start": "react-scripts start",
 		"build": "react-scripts build",
 		"test": "react-scripts test --env=jsdom",
+		"test:debug": "react-scripts --inspect-brk test --env=jsdom --runInBand --no-cache",
 		"eject": "react-scripts eject",
 		"format": "prettier --loglevel warn --write \"**/*.{js,ts,jsx,tsx,mdx,vue,json,json5,yaml,md,html,less,sass,css,gql}\"",
 		"prepare": "husky install",

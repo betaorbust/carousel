@@ -1,7 +1,7 @@
 /* @jsxImportSource @emotion/react */
 import React, { useCallback, useState } from 'react';
 import { css, Global } from '@emotion/react';
-import { CarouselControls } from './carousel';
+import { CarouselControls } from './carousel-controls';
 import 'tiny-slider/dist/tiny-slider.css';
 import { TinySliderCarouselDemo } from './demo-tiny-slider';
 import { CarouselDemo } from './demo-homespun';
@@ -25,7 +25,7 @@ const globalStyles = css`
 
 const appStyles = css`
 	margin: 0 auto;
-	max-width: 700px;
+	/* max-width: 700px; */
 	color: #333;
 `;
 

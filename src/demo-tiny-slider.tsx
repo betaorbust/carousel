@@ -52,8 +52,7 @@ export const TinySliderCarouselDemo: React.FC<TinySliderCarouselDemoProps> = ({
 					style={{ position: 'relative' }}
 					onClick={(): void => {
 						if (tinySliderRef.current) {
-							console.log('on click going to index', index);
-							// @ts-expect-error - whaa
+							// @ts-expect-error - slider ref isn't well typed
 							tinySliderRef.current.slider.goTo(index);
 						}
 					}}
@@ -66,7 +65,6 @@ export const TinySliderCarouselDemo: React.FC<TinySliderCarouselDemoProps> = ({
 	);
 
 	useEffect(() => {
-		console.log('wait, what???', initialized);
 		const callback = (info: any): void => {
 			console.log('index changed', info.displayIndex - 1, currentIndex);
 			if (info.displayIndex - 1 !== currentIndex) {
@@ -100,7 +98,6 @@ export const TinySliderCarouselDemo: React.FC<TinySliderCarouselDemoProps> = ({
 					settings={tinySliderSettings}
 					ref={(el): void => {
 						tinySliderRef.current = el;
-						console.log('setting ref', el);
 						setInitialized(() => true);
 					}}
 				>
