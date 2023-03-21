@@ -46,6 +46,7 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 						<div>
 							<h3>{name}</h3>
 							<sub>{price}</sub>
+							<p>{index}</p>
 						</div>
 					</div>
 				</CarouselItem>
@@ -62,6 +63,7 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 					onClickIndex={onChangeIndex}
 					currentIndex={currentIndex}
 					itemCount={plans.length}
+					itemWidth={200}
 					renderItemAtIndex={renderItem}
 				/>
 			</div>

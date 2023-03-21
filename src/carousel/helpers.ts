@@ -23,7 +23,7 @@ export function getLayoutStart(
  */
 export function getRealIndex(virtualIndex: number, totalItems: number): number {
 	return virtualIndex < 0
-		? totalItems + (virtualIndex % totalItems) - 1
+		? (totalItems - (-virtualIndex % totalItems)) % totalItems
 		: virtualIndex % totalItems;
 }
 

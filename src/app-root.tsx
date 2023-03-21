@@ -51,6 +51,7 @@ const plans = [
 export const App: React.FC = () => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const onChange = useCallback((index: number) => {
+		console.log('root onChange called, setting it to', index);
 		setCurrentIndex(index);
 	}, []);
 

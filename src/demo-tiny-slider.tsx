@@ -66,7 +66,6 @@ export const TinySliderCarouselDemo: React.FC<TinySliderCarouselDemoProps> = ({
 
 	useEffect(() => {
 		const callback = (info: any): void => {
-			console.log('index changed', info.displayIndex - 1, currentIndex);
 			if (info.displayIndex - 1 !== currentIndex) {
 				onChangeIndex(info.displayIndex - 1);
 			}
@@ -85,7 +84,6 @@ export const TinySliderCarouselDemo: React.FC<TinySliderCarouselDemoProps> = ({
 	}, [initialized, currentIndex, onChangeIndex]);
 
 	useEffect(() => {
-		console.log('calling goTo', currentIndex);
 		// @ts-expect-error - lol hanging things on html objects
 		tinySliderRef.current?.slider?.goTo?.(currentIndex);
 	}, [currentIndex]);
