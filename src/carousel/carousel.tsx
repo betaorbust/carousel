@@ -16,25 +16,32 @@
  * we animate.
  */
 import React, {
-	useMemo,
 	useState,
 	useCallback,
 	useRef,
 	useEffect,
+	useLayoutEffect,
 } from 'react';
 import { css } from '@emotion/react';
 import { useSwipeable } from 'react-swipeable';
 import { useWindowSize } from 'usehooks-ts';
 import { CarouselVirtualizedList } from './carousel-virtualized-list';
-import { CarouselItemProps } from './carousel-item';
-import { usePrevious, findNearest, positionCurrentIndex } from './helpers';
+import {
+	usePrevious,
+	findNearest,
+	positionCurrentIndex,
+	getRealIndex,
+} from './helpers';
 
-const SWIPE_SPEED_S = 1;
+const SWIPE_SPEED_S = 0.5;
 
 type CarouselProps = {
 	onClickIndex: (index: number) => void;
 	currentIndex: number;
-	children: React.ReactElement<CarouselItemProps>[];
+	itemCount: number;
+	renderItemAtIndex: React.ComponentProps<
+		typeof CarouselVirtualizedList
+	>['renderItemAtIndex'];
 };
 
 const wrapperStyles = css`
@@ -48,41 +55,36 @@ const shifterStyles = css`
 
 export const Carousel: React.FC<CarouselProps> = ({
 	onClickIndex: onChange,
-	children,
 	currentIndex,
+	renderItemAtIndex,
+	itemCount,
 }) => {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const shifterRef = useRef<HTMLDivElement | null>(null);
-	const childCount = React.Children.count(children);
 	// Tracks how far we have to go.
 	const [desiredOffset, setDesiredOffset] = useState(0);
 	const [transitionPhase, setTransitionPhase] = useState<
-		'rest' | 'start' | 'move' | 'reconcile'
+		'rest' | 'move' | 'reconcile'
 	>('rest');
 	// This is in the virtualized list, so we start out childIndex offset
 	// because we have a copy of all elements in front of us
-	const [internalIndex, setInternalIndex] = useState(
-		currentIndex + childCount,
-	);
+	const [internalIndex, setInternalIndex] = useState(currentIndex);
 	const unsafePreviousIndex = usePrevious(currentIndex);
 	const previousIndex = unsafePreviousIndex ?? currentIndex;
+	const [startIndex, setStartIndex] = useState(currentIndex - itemCount);
+	const [endIndex, setEndIndex] = useState(currentIndex + itemCount);
+	const [transform, setTransform] = useState('none');
 
 	// Re-render on window sizing changes.
-	useWindowSize();
+	const windowSize = useWindowSize();
 
 	// Calculate and set updated desiredOffset, which will be
 	// shifted towards 0 as animations complete.
 	useEffect(() => {
 		setDesiredOffset(
-			(d) => d + findNearest(currentIndex, previousIndex, childCount),
+			(d) => d + findNearest(currentIndex, previousIndex, itemCount),
 		);
-	}, [currentIndex, previousIndex, childCount]);
-
-	useEffect(() => {
-		if (transitionPhase === 'start') {
-			setTransitionPhase('move');
-		}
-	}, [transitionPhase]);
+	}, [currentIndex, previousIndex, itemCount]);
 
 	// If there are desiredOffsets, move them towards 0 by triggering
 	// a single animation shift.
@@ -91,14 +93,10 @@ export const Carousel: React.FC<CarouselProps> = ({
 			return;
 		}
 		// We're going to move!
-		setTransitionPhase('start');
-		if (desiredOffset > 0) {
-			setInternalIndex((vi) => vi + 1);
-			setDesiredOffset((d) => d - 1);
-		} else {
-			setInternalIndex((vi) => vi - 1);
-			setDesiredOffset((d) => d + 1);
-		}
+		setTransitionPhase('move');
+		setInternalIndex((vi) => vi + desiredOffset);
+		setDesiredOffset(() => 0);
+
 		// Clean up after we're done with the transition
 		window.setTimeout(() => {
 			setTransitionPhase('reconcile');
@@ -107,25 +105,19 @@ export const Carousel: React.FC<CarouselProps> = ({
 
 	useEffect(() => {
 		if (transitionPhase === 'reconcile') {
-			// Update virtual index to match centered element
-			// if (internalIndex < childCount) {
-			// 	setInternalIndex((v) => v + childCount);
-			// } else if (internalIndex >= 2 * childCount) {
-			// 	setInternalIndex((v) => v - childCount);
-			// }
+			setStartIndex(() => internalIndex - itemCount);
+			setEndIndex(() => internalIndex + itemCount);
 			setTransitionPhase('rest');
 		}
-	}, [transitionPhase, childCount, internalIndex]);
+	}, [transitionPhase, itemCount, internalIndex]);
 
 	// Things to do when a user swipes
 	const swipeableHandlers = useSwipeable({
 		onSwipedLeft: () => {
-			// Wrap around if needed
-			onChange((currentIndex + childCount + 1) % childCount);
+			onChange(currentIndex + 1);
 		},
 		onSwipedRight: () => {
-			// Wrap around if needed
-			onChange((currentIndex + childCount - 1) % childCount);
+			onChange(currentIndex - 1);
 		},
 		swipeDuration: 500,
 		touchEventOptions: { passive: false },
@@ -147,26 +139,43 @@ export const Carousel: React.FC<CarouselProps> = ({
 		[swipeableHandlers],
 	);
 
+	const onClickIndex = useCallback(
+		(index: number) => {
+			onChange(getRealIndex(index, itemCount));
+		},
+		[itemCount, onChange],
+	);
+
 	// Build out a virtual list of children where we have a virtual set of
 	// children before and after the actual children. This allows us to
 	// virtualize the infinite scroll.
-	const wrappedChildren = useMemo(
-		() => (
-			<CarouselVirtualizedList
-				onClickIndex={onChange}
-				currentOverallIndex={internalIndex}
-			>
-				{children}
-			</CarouselVirtualizedList>
-		),
-		[children, onChange, internalIndex],
+	const wrappedChildren = (
+		<CarouselVirtualizedList
+			onClickIndex={onClickIndex}
+			startIndex={startIndex}
+			endIndex={endIndex}
+			currentOverallIndex={internalIndex}
+			renderItemAtIndex={renderItemAtIndex}
+		/>
 	);
 
-	const transform = `translateX(${positionCurrentIndex(
-		internalIndex,
-		shifterRef,
-		wrapperRef,
-	)}px)`;
+	// Calculate the transform to apply to the shifter element
+	// unfortunately this has to be done with a useLayoutEffect
+	// and an extra render because we don't know how many elements
+	// are in the virtual list until after the first render.
+	useLayoutEffect(
+		() => {
+			setTransform(
+				`translateX(${positionCurrentIndex(
+					internalIndex,
+					shifterRef,
+					wrapperRef,
+				)}px)`,
+			);
+		},
+		// Update between phases and any time the window size changes
+		[internalIndex, transitionPhase, windowSize],
+	);
 
 	const transition =
 		transitionPhase === 'rest'

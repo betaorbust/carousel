@@ -1,14 +1,13 @@
 /* @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import React from 'react';
-import { CarouselItemProps } from './carousel-item';
-import { getLayoutStart } from './helpers';
 
 type CarouselElementWrapperProps = {
 	children: React.ReactNode;
-	onClick: React.MouseEventHandler<HTMLDivElement>;
 	isCurrent: boolean;
 	identifier: string;
+	index: number;
+	onClickIndex: (index: number) => void;
 };
 
 const elementStyle = css`
@@ -18,91 +17,59 @@ const elementStyle = css`
 
 const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 	children,
-	onClick,
 	isCurrent,
+	index,
 	identifier,
+	onClickIndex,
 }) => (
 	<div
 		aria-hidden
 		data-virtual-index={identifier}
 		className={isCurrent ? 'current' : undefined}
-		onClick={onClick}
 		css={elementStyle}
+		onClick={(): void => onClickIndex(index)}
 	>
 		{children}
 	</div>
 );
 
 type CarouselVirtualizedListProps = {
-	children: React.ReactElement<CarouselItemProps>[];
-	onClickIndex: (index: number) => void;
+	renderItemAtIndex: (index: number) => React.ReactElement;
+	startIndex: number;
+	endIndex: number;
 	currentOverallIndex: number;
+	onClickIndex: CarouselElementWrapperProps['onClickIndex'];
 };
 
 export const CarouselVirtualizedList: React.FC<
 	CarouselVirtualizedListProps
-> = ({ children, onClickIndex, currentOverallIndex }) => {
-	const before: Array<React.ReactElement> = [];
-	const real: Array<React.ReactElement> = [];
-	const after: Array<React.ReactNode> = [];
-	const childCount = React.Children.count(children);
+> = ({
+	renderItemAtIndex,
+	currentOverallIndex,
+	startIndex,
+	endIndex,
+	onClickIndex,
+}) => {
+	// Don't know if shakti polyfills Array.from, so we'll use the old way
+	// eslint-disable-next-line unicorn/no-new-array
+	const contents = new Array(endIndex - startIndex + 1)
+		.fill('')
+		.map((_, i) => {
+			const currentIndex = startIndex + i;
+			return (
+				<CarouselElementWrapper
+					key={currentIndex}
+					identifier={`${currentIndex}`}
+					isCurrent={currentIndex === currentOverallIndex}
+					onClickIndex={onClickIndex}
+					index={currentIndex}
+				>
+					{renderItemAtIndex(startIndex + i)}
+				</CarouselElementWrapper>
+			);
+		});
 
-	// where we start to lay the primary elements out
-	const layoutStartIndex = getLayoutStart(currentOverallIndex, childCount);
-	React.Children.forEach(children, (child, childIndex) => {
-		if (!React.isValidElement(child)) {
-			return;
-		}
-		let { key: childKey } = child;
-		if (!childKey) {
-			console.error('Key required for animation.');
-			childKey = `key-${childIndex}`;
-		}
-		const elementIndex = layoutStartIndex + childIndex;
-		before.push(
-			<CarouselElementWrapper
-				// One element set offset to negative
-				key={`${childKey}:${elementIndex - childCount}`}
-				identifier={`${elementIndex - childCount}`}
-				isCurrent={false}
-				onClick={(): void => {
-					onClickIndex(childIndex);
-				}}
-			>
-				{elementIndex - childCount}
-				{React.cloneElement(child)}
-			</CarouselElementWrapper>,
-		);
-		real.push(
-			<CarouselElementWrapper
-				// The centered element
-				key={`${childKey}:${elementIndex}`}
-				identifier={`${elementIndex}`}
-				isCurrent={currentOverallIndex === elementIndex}
-				onClick={(): void => {
-					onClickIndex(childIndex);
-				}}
-			>
-				{elementIndex}
-				{child}
-			</CarouselElementWrapper>,
-		);
-		after.push(
-			<CarouselElementWrapper
-				// One element set offset to positive
-				key={`${childKey}:${elementIndex + childCount}`}
-				identifier={`${elementIndex + childCount}`}
-				isCurrent={false}
-				onClick={(): void => {
-					onClickIndex(childIndex);
-				}}
-			>
-				{elementIndex + childCount}
-				{React.cloneElement(child)}
-			</CarouselElementWrapper>,
-		);
-	});
-
-	// eslint-disable-next-line react/jsx-no-useless-fragment -- typescript?
-	return <>{[...before, ...real, ...after]}</>;
+	// As far as typescript is concerned, this is not a useless fragment
+	// eslint-disable-next-line react/jsx-no-useless-fragment
+	return <>{contents}</>;
 };

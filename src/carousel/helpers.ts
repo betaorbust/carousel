@@ -17,6 +17,16 @@ export function getLayoutStart(
 	return Math.floor(virtualIndex / totalRealChildren) * totalRealChildren;
 }
 
+/**
+ * Return the index of the real element array that any
+ * given virtual index maps to
+ */
+export function getRealIndex(virtualIndex: number, totalItems: number): number {
+	return virtualIndex < 0
+		? totalItems + (virtualIndex % totalItems) - 1
+		: virtualIndex % totalItems;
+}
+
 export function positionCurrentIndex(
 	virtualIndex: number,
 	containerRef: React.RefObject<HTMLDivElement>,
@@ -28,7 +38,6 @@ export function positionCurrentIndex(
 	const target = containerRef.current.querySelector(
 		`[data-virtual-index="${virtualIndex}"]`,
 	);
-	console.log('target', target);
 	if (!target) {
 		return 0;
 	}

@@ -1,9 +1,10 @@
 /* @jsxImportSource @emotion/react */
 
 import { css } from '@emotion/react';
-import React, { useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { CarouselItem } from './carousel/carousel-item';
 import { Carousel } from './carousel/carousel';
+import { getRealIndex } from './carousel/helpers';
 
 const elementStyles = css`
 	width: 200px;
@@ -15,9 +16,9 @@ const elementStyles = css`
 	box-sizing: border-box;
 	margin: 5px 5px;
 	opacity: 0.5;
-	transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+	transition: transform 0.5s ease-in-out, opacity 1s ease-in-out;
 	.current & {
-		transform: scale(1.5);
+		transform: scale(1.1);
 		opacity: 1;
 	}
 `;
@@ -33,9 +34,13 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 	currentIndex,
 	plans,
 }) => {
-	const initialDemoElements: React.ReactElement[] = useMemo(
-		() =>
-			plans.map(({ name, price }) => (
+	// Make up a function to render an arbitrary card at any given index
+	const renderItem = useCallback(
+		(index: number): React.ReactElement => {
+			// Pick a plan based on the index of the item in the carousel.
+			const planIndex = getRealIndex(index, plans.length);
+			const { name, price } = plans[planIndex];
+			return (
 				<CarouselItem key={name} itemKey={name}>
 					<div css={elementStyles}>
 						<div>
@@ -44,9 +49,11 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 						</div>
 					</div>
 				</CarouselItem>
-			)),
+			);
+		},
 		[plans],
 	);
+
 	return (
 		<>
 			<h2 style={{ marginTop: '50px' }}>Homespun Carousel Demo</h2>
@@ -54,9 +61,9 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 				<Carousel
 					onClickIndex={onChangeIndex}
 					currentIndex={currentIndex}
-				>
-					{initialDemoElements}
-				</Carousel>
+					itemCount={plans.length}
+					renderItemAtIndex={renderItem}
+				/>
 			</div>
 			<h4>🎉 Benefits</h4>
 			<ul>
@@ -73,7 +80,11 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 			</ul>
 			<h4>🚧 Current Blockers</h4>
 			<ul>
-				<li>Animation when wrapping virtual list pops</li>
+				<li>
+					<del>Animation when wrapping virtual list pops</del>{' '}
+					<strong>Update:</strong> Now fully virtualized list means
+					the animation does not pop around.
+				</li>
 				<li>
 					Only responds to swipe, not tracking finger like the fancier
 					ones. (This might not be a blocker, but it's deviating from
