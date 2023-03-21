@@ -29,7 +29,7 @@ import { CarouselVirtualizedList } from './carousel-virtualized-list';
 import { CarouselItemProps } from './carousel-item';
 import { usePrevious, findNearest, positionCurrentIndex } from './helpers';
 
-const SWIPE_SPEED_S = 0.2;
+const SWIPE_SPEED_S = 1;
 
 type CarouselProps = {
 	onClickIndex: (index: number) => void;
@@ -57,7 +57,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 	// Tracks how far we have to go.
 	const [desiredOffset, setDesiredOffset] = useState(0);
 	const [transitionPhase, setTransitionPhase] = useState<
-		'rest' | 'move' | 'reconcile'
+		'rest' | 'start' | 'move' | 'reconcile'
 	>('rest');
 	// This is in the virtualized list, so we start out childIndex offset
 	// because we have a copy of all elements in front of us
@@ -78,6 +78,12 @@ export const Carousel: React.FC<CarouselProps> = ({
 		);
 	}, [currentIndex, previousIndex, childCount]);
 
+	useEffect(() => {
+		if (transitionPhase === 'start') {
+			setTransitionPhase('move');
+		}
+	}, [transitionPhase]);
+
 	// If there are desiredOffsets, move them towards 0 by triggering
 	// a single animation shift.
 	useEffect(() => {
@@ -85,7 +91,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 			return;
 		}
 		// We're going to move!
-		setTransitionPhase('move');
+		setTransitionPhase('start');
 		if (desiredOffset > 0) {
 			setInternalIndex((vi) => vi + 1);
 			setDesiredOffset((d) => d - 1);
@@ -158,7 +164,6 @@ export const Carousel: React.FC<CarouselProps> = ({
 
 	const transform = `translateX(${positionCurrentIndex(
 		internalIndex,
-		childCount,
 		shifterRef,
 		wrapperRef,
 	)}px)`;
@@ -190,6 +195,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 			>
 				{wrappedChildren}
 			</div>
+			<p>Phase: {transitionPhase}</p>
 		</div>
 	);
 };

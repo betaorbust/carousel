@@ -15,9 +15,9 @@ const elementStyles = css`
 	box-sizing: border-box;
 	margin: 5px 5px;
 	opacity: 0.5;
-	transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+	transition: transform 1s ease-in-out, opacity 1s ease-in-out;
 	.current & {
-		transform: scale(1.05);
+		transform: scale(1.5);
 		opacity: 1;
 	}
 `;

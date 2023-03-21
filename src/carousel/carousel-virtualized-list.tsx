@@ -24,7 +24,7 @@ const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 }) => (
 	<div
 		aria-hidden
-		data-carousel-id={identifier}
+		data-virtual-index={identifier}
 		className={isCurrent ? 'current' : undefined}
 		onClick={onClick}
 		css={elementStyle}
@@ -48,8 +48,7 @@ export const CarouselVirtualizedList: React.FC<
 	const childCount = React.Children.count(children);
 
 	// where we start to lay the primary elements out
-	// const layoutStartIndex = getLayoutStart(currentOverallIndex, childCount);
-	const layoutStartIndex = childCount;
+	const layoutStartIndex = getLayoutStart(currentOverallIndex, childCount);
 	React.Children.forEach(children, (child, childIndex) => {
 		if (!React.isValidElement(child)) {
 			return;
@@ -60,48 +59,45 @@ export const CarouselVirtualizedList: React.FC<
 			childKey = `key-${childIndex}`;
 		}
 		const elementIndex = layoutStartIndex + childIndex;
-		const beforeId = `${childKey}:${elementIndex - childCount}`;
-		const id = `${childKey}:${elementIndex}`;
-		const afterId = `${childKey}:${elementIndex + childCount}`;
 		before.push(
 			<CarouselElementWrapper
 				// One element set offset to negative
-				key={beforeId}
-				identifier={beforeId}
+				key={`${childKey}:${elementIndex - childCount}`}
+				identifier={`${elementIndex - childCount}`}
 				isCurrent={false}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
 			>
-				{beforeId}
+				{elementIndex - childCount}
 				{React.cloneElement(child)}
 			</CarouselElementWrapper>,
 		);
 		real.push(
 			<CarouselElementWrapper
 				// The centered element
-				key={id}
-				identifier={id}
+				key={`${childKey}:${elementIndex}`}
+				identifier={`${elementIndex}`}
 				isCurrent={currentOverallIndex === elementIndex}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
 			>
-				{`${childKey}-${elementIndex}`}
+				{elementIndex}
 				{child}
 			</CarouselElementWrapper>,
 		);
 		after.push(
 			<CarouselElementWrapper
 				// One element set offset to positive
-				key={afterId}
-				identifier={afterId}
+				key={`${childKey}:${elementIndex + childCount}`}
+				identifier={`${elementIndex + childCount}`}
 				isCurrent={false}
 				onClick={(): void => {
 					onClickIndex(childIndex);
 				}}
 			>
-				{afterId}
+				{elementIndex + childCount}
 				{React.cloneElement(child)}
 			</CarouselElementWrapper>,
 		);
