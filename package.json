@@ -1,11 +1,12 @@
 {
-	"name": "react-typescript",
+	"name": "@betaorbust/carousel",
 	"version": "1.0.0",
-	"description": "React and TypeScript example starter project",
+	"description": "Carousel",
+	"homepage": "https://betaorbust.github.io/sliders",
 	"keywords": [
 		"typescript",
 		"react",
-		"starter"
+		"carousel"
 	],
 	"main": "src/index.tsx",
 	"dependencies": {
