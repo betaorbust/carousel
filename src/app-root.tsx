@@ -2,8 +2,6 @@
 import React, { useCallback, useState } from 'react';
 import { css, Global } from '@emotion/react';
 import { CarouselControls } from './carousel-controls';
-import 'tiny-slider/dist/tiny-slider.css';
-import { TinySliderCarouselDemo } from './demo-tiny-slider';
 import { CarouselDemo } from './demo-homespun';
 
 const globalStyles = css`
@@ -82,12 +80,6 @@ export const App: React.FC = () => {
 				</div>
 
 				<CarouselDemo
-					currentIndex={currentIndex}
-					onChangeIndex={onChange}
-					plans={plans}
-				/>
-
-				<TinySliderCarouselDemo
 					currentIndex={currentIndex}
 					onChangeIndex={onChange}
 					plans={plans}
