@@ -35,7 +35,7 @@ jobs:
             - run: npm run build
 
             - name: Deploy
-              uses: peaceiris/actions-gh-pages@0d67ec5c39cdb4146b7385e40f506ecce78b53de
+              uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
               if: ${{ github.ref == 'refs/heads/main' }}
               with:
                   github_token: ${{ secrets.GITHUB_TOKEN }}
