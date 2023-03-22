@@ -89,16 +89,23 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 			<h4>🚧 Current Blockers</h4>
 			<ul>
 				<li>
-					<del>Animation when wrapping virtual list pops</del>{' '}
+					✅ <del>Animation when wrapping virtual list pops</del>
+					<br />
 					<strong>Update:</strong> Now fully virtualized list means
 					the animation does not pop around. 🎉
 				</li>
 				<li>
+					✅{' '}
 					<del>
 						Only responds to swipe, not tracking finger like the
 						fancier ones.
-					</del>{' '}
+					</del>
+					<br />
 					<strong>Update:</strong> Now has finger tracking! 🎉
+				</li>
+				<li>
+					❌ I have not looked at RTL yet and we probably need to
+					understand what we want to do in that case.
 				</li>
 			</ul>
 		</>
