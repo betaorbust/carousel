@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/sliders/static/js/main.69e13e3c.js",
-    "index.html": "/sliders/index.html",
-    "main.69e13e3c.js.map": "/sliders/static/js/main.69e13e3c.js.map"
+    "main.js": "/carousel/static/js/main.69e13e3c.js",
+    "index.html": "/carousel/index.html",
+    "main.69e13e3c.js.map": "/carousel/static/js/main.69e13e3c.js.map"
   },
   "entrypoints": [
     "static/js/main.69e13e3c.js"
