@@ -2,7 +2,7 @@
 	"name": "@betaorbust/carousel",
 	"version": "1.0.0",
 	"description": "Carousel",
-	"homepage": "https://betaorbust.github.io/sliders",
+	"homepage": "https://betaorbust.github.io/carousel",
 	"keywords": [
 		"typescript",
 		"react",
