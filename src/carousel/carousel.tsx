@@ -45,6 +45,7 @@ type CarouselProps = {
 	renderItemAtIndex: React.ComponentProps<
 		typeof CarouselVirtualizedList
 	>['renderItemAtIndex'];
+	preventScrolling: boolean;
 };
 
 const wrapperStyles = css`
@@ -56,6 +57,10 @@ const shifterStyles = css`
 	display: flex;
 `;
 
+const preventDefault = (e: Event): void => {
+	e.preventDefault();
+};
+
 export const Carousel: React.FC<CarouselProps> = ({
 	onClickIndex: onChange,
 	currentIndex,
@@ -66,6 +71,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 	swipeMaxDurationMs,
 	swipeMinDistancePx,
 	virtualListSize,
+	preventScrolling,
 }) => {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const shifterRef = useRef<HTMLDivElement | null>(null);
@@ -75,10 +81,12 @@ export const Carousel: React.FC<CarouselProps> = ({
 	// This is in the virtualized list, so we start out childIndex offset
 	// because we have a copy of all elements in front of us
 	const [internalIndex, setInternalIndex] = useState(currentIndex);
-	// const unsafePreviousIndex = usePrevious(currentIndex);
-	// const previousIndex = unsafePreviousIndex ?? currentIndex;
-	const [startIndex, setStartIndex] = useState(currentIndex - itemCount);
-	const [endIndex, setEndIndex] = useState(currentIndex + itemCount);
+	const [startIndex, setStartIndex] = useState(
+		currentIndex - Math.round(virtualListSize / 2),
+	);
+	const [endIndex, setEndIndex] = useState(
+		currentIndex + Math.round(virtualListSize / 2),
+	);
 	const [transform, setTransform] = useState('none');
 	const [manuallyScrolling, setManuallyScrolling] = useState(false);
 	const interactionRef = useRef({
@@ -164,6 +172,19 @@ export const Carousel: React.FC<CarouselProps> = ({
 		},
 		[manuallyScrolling],
 	);
+
+	useEffect(() => {
+		if (manuallyScrolling && preventScrolling) {
+			document.addEventListener('touchmove', preventDefault, {
+				passive: false,
+			});
+		} else {
+			document.removeEventListener('touchmove', preventDefault);
+		}
+		return () => {
+			document.removeEventListener('touchmove', preventDefault);
+		};
+	}, [manuallyScrolling, preventScrolling]);
 
 	// Things to do when a user swipes
 	const swipeableHandlers = useSwipeable({
@@ -275,7 +296,8 @@ export const Carousel: React.FC<CarouselProps> = ({
 		transitionPhase === 'rest' || manuallyScrolling
 			? 'none'
 			: `transform ${animationDurationMs / 1000}s ease-out`;
-
+	// const touchAction =
+	// 	transitionPhase === 'rest' && !manuallyScrolling ? 'auto' : 'none';
 	return (
 		<div
 			// This entire component is hidden from screen readers and keyboard
@@ -296,6 +318,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 				style={{
 					transition,
 					transform,
+					// touchAction,
 				}}
 			>
 				<CarouselVirtualizedList

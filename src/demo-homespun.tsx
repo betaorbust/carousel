@@ -26,6 +26,21 @@ const elementStyles = css`
 		opacity: 1;
 		z-index: 1000;
 	}
+	h3 {
+		margin: 0;
+	}
+`;
+
+const indexStyle = css`
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	font-size: 0.6em;
+	text-align: center;
+	background-color: white;
+	border-radius: 50%;
+	border: solid 1px gray;
+	padding: 5px;
 `;
 
 type DemoProps = {
@@ -51,7 +66,7 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 						<div>
 							<h3>{name}</h3>
 							<sub>{price}</sub>
-							<p>{index}</p>
+							<div css={indexStyle}>{index}</div>
 						</div>
 					</div>
 				</CarouselItem>
@@ -71,9 +86,10 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 					itemWidth={200}
 					renderItemAtIndex={renderItem}
 					swipeMaxDurationMs={400}
-					swipeMinDistancePx={10}
-					animationDurationMs={500}
+					swipeMinDistancePx={8}
+					animationDurationMs={250}
 					virtualListSize={plans.length * 6}
+					preventScrolling
 				/>
 			</div>
 			<h4>🎉 Benefits</h4>
