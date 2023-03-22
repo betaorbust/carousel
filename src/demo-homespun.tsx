@@ -14,12 +14,17 @@ const elementStyles = css`
 	border: solid 1px gray;
 	border-radius: 25px;
 	box-sizing: border-box;
-	margin: 5px 5px;
+	margin: 10px 5px;
 	opacity: 0.5;
-	transition: transform 0.5s ease-in-out, opacity 1s ease-in-out;
+	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+	background-color: white;
+	z-index: 1;
+	position: relative;
+	user-select: none;
 	.current & {
 		transform: scale(1.1);
 		opacity: 1;
+		z-index: 1000;
 	}
 `;
 
@@ -65,32 +70,35 @@ export const CarouselDemo: React.FC<DemoProps> = ({
 					itemCount={plans.length}
 					itemWidth={200}
 					renderItemAtIndex={renderItem}
+					swipeMaxDurationMs={400}
+					swipeMinDistancePx={10}
+					animationDurationMs={500}
+					virtualListSize={plans.length * 6}
 				/>
 			</div>
 			<h4>🎉 Benefits</h4>
 			<ul>
 				<li>We know it works in our browser matrix.</li>
 				<li>It has top-down state as a design criteria.</li>
+				<li>It can actually do what this design requires 😭</li>
 			</ul>
 			<h4>🤔 Concerns</h4>
 			<ul>
 				<li>It is a lot of bespoke code.</li>
-				<li>
-					It is not as feature rich and will take effort to hit the
-					features of a more fully-built-out library.
-				</li>
 			</ul>
 			<h4>🚧 Current Blockers</h4>
 			<ul>
 				<li>
 					<del>Animation when wrapping virtual list pops</del>{' '}
 					<strong>Update:</strong> Now fully virtualized list means
-					the animation does not pop around.
+					the animation does not pop around. 🎉
 				</li>
 				<li>
-					Only responds to swipe, not tracking finger like the fancier
-					ones. (This might not be a blocker, but it's deviating from
-					the prototype.)
+					<del>
+						Only responds to swipe, not tracking finger like the
+						fancier ones.
+					</del>{' '}
+					<strong>Update:</strong> Now has finger tracking! 🎉
 				</li>
 			</ul>
 		</>

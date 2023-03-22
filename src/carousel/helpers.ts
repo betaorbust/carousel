@@ -1,13 +1,3 @@
-import { useRef, useEffect } from 'react';
-
-export function usePrevious<T>(value: T): T | undefined {
-	const ref = useRef<T>();
-	useEffect(() => {
-		ref.current = value; // assign the value of ref to the argument
-	}, [value]); // this code will run when the value of 'value' changes
-	return ref.current; // in the end, return the current ref value.
-}
-
 // Get the layout start of the real set of elements (not the phantom ones)
 export function getLayoutStart(
 	virtualIndex: number,
@@ -66,7 +56,7 @@ export function findNearest(
 	if (difference >= 0) {
 		// So try going backwards to see if that's closer
 		const wrappedDifference = -total + difference;
-		return Math.abs(difference) < Math.abs(wrappedDifference)
+		return Math.abs(difference) <= Math.abs(wrappedDifference)
 			? difference
 			: wrappedDifference;
 	}
@@ -76,4 +66,18 @@ export function findNearest(
 	return Math.abs(difference) < Math.abs(wrappedDifference)
 		? difference
 		: wrappedDifference;
+}
+
+/**
+ * Given a virtual index and an incoming next index (from the real space),
+ * find the nearest virtual index that maps to the real index.
+ */
+export function getNearestVirtualIndexMappingToReal(
+	virtualIndex: number,
+	realIndex: number,
+	totalItems: number,
+): number {
+	const currentVirtualInReal = getRealIndex(virtualIndex, totalItems);
+	const difference = findNearest(realIndex, currentVirtualInReal, totalItems);
+	return virtualIndex + difference;
 }
