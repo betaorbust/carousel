@@ -88,7 +88,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 		currentIndex + Math.round(virtualListSize / 2),
 	);
 	const [transform, setTransform] = useState('none');
-	const [manuallyScrolling, setManuallyScrolling] = useState(false);
+	const [manuallyDragging, setManuallyDragging] = useState(false);
 	const interactionRef = useRef({
 		startTime: 0,
 		touchXLast: 0,
@@ -99,8 +99,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 	// Re-render on window sizing changes.
 	const windowSize = useWindowSize();
 
-	// Calculate and set updated desiredOffset, which will be
-	// shifted towards 0 as animations complete.
+	// Set the internal index to be the nearest virtual index
 	useEffect(() => {
 		setInternalIndex(
 			getNearestVirtualIndexMappingToReal(
@@ -111,8 +110,9 @@ export const Carousel: React.FC<CarouselProps> = ({
 		);
 	}, [currentIndex, itemCount, internalIndex]);
 
-	// If there are desiredOffsets, move them towards 0 by triggering
-	// a single animation shift.
+	// If we have outstanding motions to do, kick them off
+	// and then trigger a reconciliation so we can update
+	// the virtual list after things have stopped moving.
 	useEffect(() => {
 		if (
 			transitionPhase !== 'rest' ||
@@ -139,6 +139,8 @@ export const Carousel: React.FC<CarouselProps> = ({
 		animationDurationMs,
 	]);
 
+	// During reconciliation, update the virtual list to center the
+	// current index, and provide new elements on either side.
 	useEffect(() => {
 		if (transitionPhase === 'reconcile') {
 			const halfOfVirtualList = Math.round((virtualListSize - 1) / 2);
@@ -148,11 +150,15 @@ export const Carousel: React.FC<CarouselProps> = ({
 		}
 	}, [transitionPhase, itemCount, internalIndex, virtualListSize]);
 
-	const onManualScrollMove:
+	// Handle dragging internally because of the performance impact
+	// that would happen if it rendered the react components on every frame.
+	// It tracks manual drags, updating a ref and the raw styles in vanilla JS
+	// until the drag is complete.
+	const onManualMove:
 		| React.MouseEventHandler<HTMLDivElement> &
 				React.TouchEventHandler<HTMLDivElement> = useCallback(
 		(event) => {
-			if (manuallyScrolling && shifterRef.current) {
+			if (manuallyDragging && shifterRef.current) {
 				// This could come from a touch or a mouse event so we have to
 				// pull the x coordinate from the right place
 				const x =
@@ -170,11 +176,13 @@ export const Carousel: React.FC<CarouselProps> = ({
 				}px)`;
 			}
 		},
-		[manuallyScrolling],
+		[manuallyDragging],
 	);
 
+	// During a manual drag, if preventScrolling is set, we attach a touchmove
+	// event to kill the scroll event.
 	useEffect(() => {
-		if (manuallyScrolling && preventScrolling) {
+		if (manuallyDragging && preventScrolling) {
 			document.addEventListener('touchmove', preventDefault, {
 				passive: false,
 			});
@@ -184,12 +192,16 @@ export const Carousel: React.FC<CarouselProps> = ({
 		return () => {
 			document.removeEventListener('touchmove', preventDefault);
 		};
-	}, [manuallyScrolling, preventScrolling]);
+	}, [manuallyDragging, preventScrolling]);
 
-	// Things to do when a user swipes
+	// Initially this relied a lot more on useSwipeable, but as the complexity
+	// of all our interactions grew, everything ended up having to be moved into
+	// the onTouchStartOrOnMouseDown and onTouchEndOrOnMouseUp handlers, so this
+	// is a good candidate for a refactor to remove the dependency and just use the
+	// native handlers directly.
 	const swipeableHandlers = useSwipeable({
 		onTouchStartOrOnMouseDown: ({ event }) => {
-			setManuallyScrolling(true);
+			setManuallyDragging(true);
 			// We start where we are
 			interactionRef.current.carouselInitialOffset = positionCurrentIndex(
 				internalIndex,
@@ -206,7 +218,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 			}
 		},
 		onTouchEndOrOnMouseUp: () => {
-			setManuallyScrolling(false);
+			setManuallyDragging(false);
 			const { touchXStart, touchXLast, startTime } =
 				interactionRef.current;
 			const delta = touchXStart - touchXLast;
@@ -249,7 +261,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 		trackMouse: true,
 	});
 
-	// The swiper mechanism uses its own ref, so we're
+	// useSwipeable uses its own ref, so we're
 	// using a callback ref to get ahold of it and
 	// assign that ref to our own outsideRef so we can
 	// apply styles etc. to it.
@@ -263,6 +275,8 @@ export const Carousel: React.FC<CarouselProps> = ({
 		[swipeableHandlers],
 	);
 
+	// Function that gets called whenever a user clicks an element
+	// in the virtual list.
 	const onClickIndex = useCallback(
 		(index: number) => {
 			// Don't bother to re-render if we're already on the index
@@ -289,49 +303,55 @@ export const Carousel: React.FC<CarouselProps> = ({
 			);
 		},
 		// Update between phases and any time the window size changes
-		[internalIndex, transitionPhase, windowSize],
+		[internalIndex, transitionPhase, windowSize, itemWidth],
 	);
 
+	// We only use the css transition for transform when we're letting
+	// the elements settle during the move phase. In reconciliation and
+	// rest, we don't want the transition to happen (because we're updating
+	// the virtual list, and we don't want to see the shift)
+	// During manual dragging, we don't want the transition because we want
+	// the elements to track as close to the touch as possible.
 	const transition =
-		transitionPhase === 'rest' || manuallyScrolling
-			? 'none'
-			: `transform ${animationDurationMs / 1000}s ease-out`;
-	// const touchAction =
-	// 	transitionPhase === 'rest' && !manuallyScrolling ? 'auto' : 'none';
+		transitionPhase === 'move' && !manuallyDragging
+			? `transform ${animationDurationMs / 1000}s ease-out`
+			: 'none';
 	return (
-		<div
-			// This entire component is hidden from screen readers and keyboard
-			// navigation because the infinite virtual list of buttons is a terrible
-			// user experience. Instead, the lower carousel navigation is focusable
-			// and aria labels that match the contents of this component's children.
-			aria-hidden
-			// eslint-disable-next-line react/jsx-props-no-spreading
-			{...swipeableHandlers}
-			ref={refPassthrough}
-			css={wrapperStyles}
-		>
+		<>
 			<div
-				ref={shifterRef}
-				css={shifterStyles}
-				onMouseMove={onManualScrollMove}
-				onTouchMove={onManualScrollMove}
-				style={{
-					transition,
-					transform,
-					// touchAction,
-				}}
+				// This entire component is hidden from screen readers and keyboard
+				// navigation because the infinite virtual list of buttons is a terrible
+				// user experience. Instead, the lower carousel navigation is focusable
+				// and aria labels that match the contents of this component's children.
+				aria-hidden
+				// eslint-disable-next-line react/jsx-props-no-spreading
+				{...swipeableHandlers}
+				ref={refPassthrough}
+				css={wrapperStyles}
 			>
-				<CarouselVirtualizedList
-					itemWidth={itemWidth}
-					onClickIndex={onClickIndex}
-					startIndex={startIndex}
-					endIndex={endIndex}
-					currentOverallIndex={internalIndex}
-					renderItemAtIndex={renderItemAtIndex}
-				/>
+				<div
+					ref={shifterRef}
+					css={shifterStyles}
+					onMouseMove={onManualMove}
+					onTouchMove={onManualMove}
+					style={{
+						transition,
+						transform,
+						// touchAction,
+					}}
+				>
+					<CarouselVirtualizedList
+						itemWidth={itemWidth}
+						onClickIndex={onClickIndex}
+						startIndex={startIndex}
+						endIndex={endIndex}
+						currentOverallIndex={internalIndex}
+						renderItemAtIndex={renderItemAtIndex}
+					/>
+				</div>
 			</div>
 			<p>Phase: {transitionPhase}</p>
 			<p>internal index: {internalIndex}</p>
-		</div>
+		</>
 	);
 };
