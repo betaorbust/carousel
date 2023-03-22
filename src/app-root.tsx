@@ -25,7 +25,7 @@ const globalStyles = css`
 
 const appStyles = css`
 	margin: 0 auto;
-	/* max-width: 700px; */
+	max-width: 700px;
 	color: #333;
 `;
 

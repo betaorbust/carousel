@@ -106,14 +106,6 @@ export const Carousel: React.FC<CarouselProps> = ({
 	// If there are desiredOffsets, move them towards 0 by triggering
 	// a single animation shift.
 	useEffect(() => {
-		console.log({
-			currentIndex,
-			nearestV: getNearestVirtualIndexMappingToReal(
-				internalIndex,
-				currentIndex,
-				itemCount,
-			),
-		});
 		if (
 			transitionPhase !== 'rest' ||
 			internalIndex ===
@@ -127,7 +119,6 @@ export const Carousel: React.FC<CarouselProps> = ({
 		}
 		// We're going to move!
 		setTransitionPhase('move');
-		console.log('at rest moving');
 		// Clean up after we're done with the transition
 		window.setTimeout(() => {
 			setTransitionPhase('reconcile');
@@ -149,20 +140,30 @@ export const Carousel: React.FC<CarouselProps> = ({
 		}
 	}, [transitionPhase, itemCount, internalIndex, virtualListSize]);
 
-	const onManualScrollMove: React.MouseEventHandler<HTMLDivElement> =
-		useCallback(
-			(event) => {
-				if (manuallyScrolling && shifterRef.current) {
-					interactionRef.current.touchXLast = event.clientX;
-					shifterRef.current.style.transform = `translateX(${
-						interactionRef.current.carouselInitialOffset -
-						(interactionRef.current.touchXStart -
-							interactionRef.current.touchXLast)
-					}px)`;
-				}
-			},
-			[manuallyScrolling],
-		);
+	const onManualScrollMove:
+		| React.MouseEventHandler<HTMLDivElement> &
+				React.TouchEventHandler<HTMLDivElement> = useCallback(
+		(event) => {
+			if (manuallyScrolling && shifterRef.current) {
+				// This could come from a touch or a mouse event so we have to
+				// pull the x coordinate from the right place
+				const x =
+					'clientX' in event
+						? event.clientX
+						: event.touches[0].clientX;
+
+				interactionRef.current.touchXLast = x;
+				// We do this live on the dom element so we don't have to
+				// re-render every single frame
+				shifterRef.current.style.transform = `translateX(${
+					interactionRef.current.carouselInitialOffset -
+					(interactionRef.current.touchXStart -
+						interactionRef.current.touchXLast)
+				}px)`;
+			}
+		},
+		[manuallyScrolling],
+	);
 
 	// Things to do when a user swipes
 	const swipeableHandlers = useSwipeable({
@@ -184,15 +185,6 @@ export const Carousel: React.FC<CarouselProps> = ({
 			}
 		},
 		onTouchEndOrOnMouseUp: () => {
-			/**
-			 *  At the end of the motion, decide what we should do:
-			 * 	- Is it a true swip? Then swipe.
-			 *  - Is it a tap? Then let the click handler handle it.
-			 *  - Is it a drag?
-			 *      - See how many units we dragged
-			 *      - Update the internal index
-			 *      - Update the parent index to match IS THIS WHERE THE EXTRA DELTA COMES FROM??
-			 */
 			setManuallyScrolling(false);
 			const { touchXStart, touchXLast, startTime } =
 				interactionRef.current;
@@ -207,9 +199,6 @@ export const Carousel: React.FC<CarouselProps> = ({
 			// click handler will do that for us.
 			if (Math.abs(delta) < swipeMinDistancePx) {
 				console.log('tap detected');
-				// but we do need to set a transition phase so we can
-				// animate back to the center
-				// setTransitionPhase('reconcile');
 			} else {
 				setTransitionPhase('move');
 				// It was a drag
@@ -225,24 +214,8 @@ export const Carousel: React.FC<CarouselProps> = ({
 
 				const newInternalIndex =
 					internalIndex + deltaUnits + swipeOffset;
-				console.log('end!', {
-					internalIndex,
-					deltaUnits,
-					swipeOffset,
-					newIndex: newInternalIndex,
-					delta,
-					duration,
-				});
-				console.log(
-					'going to set the index from inside the drag to',
-					newInternalIndex,
-					getRealIndex(newInternalIndex, itemCount),
-				);
+
 				setInternalIndex(newInternalIndex);
-				console.log(
-					'want to set it to',
-					getRealIndex(newInternalIndex, itemCount),
-				);
 				onChange(getRealIndex(newInternalIndex, itemCount));
 				setTimeout(() => {
 					setTransitionPhase('reconcile');
@@ -319,6 +292,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 				ref={shifterRef}
 				css={shifterStyles}
 				onMouseMove={onManualScrollMove}
+				onTouchMove={onManualScrollMove}
 				style={{
 					transition,
 					transform,
