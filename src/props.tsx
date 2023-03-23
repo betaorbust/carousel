@@ -21,6 +21,7 @@ const tableStyles = css`
 	border-collapse: separate;
 	border-spacing: 10px;
 	margin: 0 auto;
+	max-width: 100%;
 `;
 
 const labelTdStyles = css`
@@ -32,7 +33,7 @@ const labelStyles = css`
 	font-weight: bold;
 	font-size: 1.3em;
 `;
-const inputStyles = css`
+const inputTdStyles = css`
 	vertical-align: top;
 `;
 
@@ -111,39 +112,48 @@ export const Props: React.FC<PropsProps> = ({
 			<h2>Props</h2>
 			<p>The following properties can modify how the carousel works.</p>
 			<table css={tableStyles}>
-				{inputs.map(
-					([name, description, value, setValue, itemType]) => (
-						<tr key={name}>
-							<td css={labelTdStyles}>
-								<label css={labelStyles} htmlFor={name}>
-									{name}:
-								</label>
-								<br />
-								<sub>{description}</sub>
-							</td>
+				<tbody>
+					{inputs.map(
+						([name, description, value, setValue, itemType]) => (
+							<tr key={name}>
+								<td css={labelTdStyles}>
+									<label css={labelStyles} htmlFor={name}>
+										{name}:
+									</label>
+									<br />
+									<sub>{description}</sub>
+								</td>
 
-							<td css={inputStyles}>
-								<input
-									id={name}
-									value={`${value}`}
-									onChange={(e): void => {
-										if (itemType === 'checkbox') {
-											setValue(e.target.checked);
-										} else {
-											setValue(Number(e.target.value));
+								<td css={inputTdStyles}>
+									<input
+										id={name}
+										value={`${value}`}
+										css={css`
+											width: 4em;
+										`}
+										onChange={(e): void => {
+											if (itemType === 'checkbox') {
+												setValue(e.target.checked);
+											} else {
+												setValue(
+													Number(e.target.value),
+												);
+											}
+										}}
+										checked={
+											itemType === 'checkbox' && value
 										}
-									}}
-									checked={itemType === 'checkbox' && value}
-									type={
-										itemType === 'checkbox'
-											? 'checkbox'
-											: 'number'
-									}
-								/>
-							</td>
-						</tr>
-					),
-				)}
+										type={
+											itemType === 'checkbox'
+												? 'checkbox'
+												: 'number'
+										}
+									/>
+								</td>
+							</tr>
+						),
+					)}
+				</tbody>
 			</table>
 		</form>
 	);
