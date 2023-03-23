@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/carousel/static/js/main.69e13e3c.js",
+    "main.js": "/carousel/static/js/main.c408b81f.js",
     "index.html": "/carousel/index.html",
-    "main.69e13e3c.js.map": "/carousel/static/js/main.69e13e3c.js.map"
+    "main.c408b81f.js.map": "/carousel/static/js/main.c408b81f.js.map"
   },
   "entrypoints": [
-    "static/js/main.69e13e3c.js"
+    "static/js/main.c408b81f.js"
   ]
 }
