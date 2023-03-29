@@ -5,6 +5,9 @@
 		"esModuleInterop": true,
 		"lib": ["dom", "es2015"],
 		"jsx": "react-jsx",
-		"jsxImportSource": "@emotion/react"
+		"jsxImportSource": "@emotion/react",
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"declaration": true
 	}
 }
