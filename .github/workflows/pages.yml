@@ -32,7 +32,7 @@ jobs:
                       ${{ runner.os }}-node-
 
             - run: npm ci
-            - run: npm run build
+            - run: npm run build-storybook
 
             - name: Deploy
               uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
