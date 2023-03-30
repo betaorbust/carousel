@@ -9,10 +9,10 @@ module.exports = {
 	],
 	parserOptions: {
 		tsconfigRootDir: __dirname,
+		project: ['./tsconfig.eslint.json'],
 	},
 	rules: {
 		'import/prefer-default-export': 'off',
-		'no-console': 'off',
 		'react/no-unknown-property': [
 			'error',
 			{
@@ -27,6 +27,7 @@ module.exports = {
 			},
 		],
 		'react/no-unescaped-entities': 'off',
+		'react/jsx-props-no-spreading': 'off',
 	},
 	overrides: [
 		{
@@ -34,7 +35,7 @@ module.exports = {
 				'*.test.ts',
 				'*.test.tsx',
 				'.eslintrc.js',
-				'**/*.story.tsx',
+				'**/*.stories.tsx',
 			],
 			rules: {
 				'import/no-extraneous-dependencies': [
@@ -44,7 +45,7 @@ module.exports = {
 							'**/*.test.ts',
 							'**/*.test.tsx',
 							'.eslintrc.js',
-							'**/*.story.tsx',
+							'**/*.stories.tsx',
 						],
 					},
 				],

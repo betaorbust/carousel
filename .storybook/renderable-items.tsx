@@ -1,9 +1,9 @@
 /* @jsxImportSource @emotion/react */
 import React, { ComponentProps } from 'react';
 import { css } from '@emotion/react';
-import { CarouselItem } from '../carousel/carousel-item';
-import { getRealIndex } from '../carousel/helpers';
-import { Carousel } from '../carousel/carousel';
+import { CarouselItem } from '../src/carousel/carousel-item';
+import { getRealIndex } from '../src/carousel/helpers';
+import { Carousel } from '../src/carousel/carousel';
 
 const elementStyles = css`
 	display: flex;
@@ -76,6 +76,10 @@ const plans = [
 		price: '$5.99',
 	},
 ];
+
+export const makeIndexLabels = () => {
+	return plans.map(({ name }) => name);
+};
 
 export const makeRenderItem = ({
 	itemWidth,

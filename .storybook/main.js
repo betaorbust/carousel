@@ -1,18 +1,16 @@
 module.exports = {
-	stories: [
-		'../src/readme.stories.mdx',
-		'../src/**/*.stories.mdx',
-		'../src/**/*.stories.@(ts|tsx)',
-		'../src/**/*.story.@(ts|tsx)',
-	],
+	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(ts|tsx)'],
 	addons: [
 		'@storybook/addon-links',
 		'@storybook/addon-essentials',
 		'@storybook/addon-interactions',
-		{
-			name: '@storybook/addon-docs',
-			options: { transcludeMarkdown: true },
-		},
+		'@storybook/addon-docs',
 	],
-	framework: '@storybook/react',
+	framework: {
+		name: '@storybook/react-webpack5',
+		options: {},
+	},
+	docs: {
+		autodocs: true,
+	},
 };

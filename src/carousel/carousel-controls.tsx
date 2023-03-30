@@ -59,6 +59,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> = ({
 		<button
 			css={controlsStyles}
 			type="button"
+			title="Previous"
 			onClick={(): void =>
 				onChange(
 					currentIndex <= 0
@@ -88,6 +89,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> = ({
 		<button
 			css={controlsStyles}
 			type="button"
+			title="Next"
 			onClick={(): void =>
 				onChange(
 					currentIndex >= indexLabels.length - 1

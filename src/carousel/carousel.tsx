@@ -1,21 +1,5 @@
 /* @jsxImportSource @emotion/react */
-/**
- * @fileoverview CarouselContainer
- * This file creates a swipeable, clickable, carousel that does not itself
- * hold the state of the current index. As the parent component changes the current
- * index, the container will animate to that index. It does this by creating a
- * virtualized list of elements based on render function passed in. With a fully virtualized
- * list, we can make sure there are always enough elements to fill the screen.
- *
- * The component itself tries to be as dumb as possible. It does have an internal index
- * that is used to track the current index of the virtualized list. Any time the parent
- * component changes the current index, the container will animate to the nearest virtual
- * index that maps to the real index.
- *
- * On internal swipes and drags, the container will animate and update its internal state
- * before calling the parent component's onChangeIndex function. So we're only committing
- * the change after the action is complete.
- */
+
 import React, {
 	useState,
 	useCallback,
@@ -34,17 +18,27 @@ import {
 } from './helpers';
 
 type CarouselProps = {
+	/** What to do when a user clicks on a carousel item. */
 	onClickIndex: (index: number) => void;
+	/** The real index in the carousel to show. */
 	currentIndex: number;
+	/** Number of real elements in the carousel. */
 	itemCount: number;
+	/** How wide each element is. */
 	itemWidth: number;
+	/** How many elements to have in the virtual slider */
 	virtualListSize: number;
+	/** How long the animation should take in ms. */
 	animationDurationMs: number;
+	/** Max swipe duration. After this it becomes a drag. */
 	swipeMaxDurationMs: number;
+	/** Min swipe distance. Before this, it's a tap. */
 	swipeMinDistancePx: number;
+	/** How to render a card at any given index */
 	renderItemAtIndex: React.ComponentProps<
 		typeof CarouselVirtualizedList
 	>['renderItemAtIndex'];
+	/** Whether to prevent scrolling on the page when swiping or dragging. */
 	preventScrolling: boolean;
 };
 
@@ -61,17 +55,84 @@ const preventDefault = (e: Event): void => {
 	e.preventDefault();
 };
 
+/**
+ * A swipeable, clickable, infinitely scrolling carousel that does not itself
+ * hold the state of the current index. As the parent component changes the
+ * current index, the container will animate to the closest instance of that
+ * index. It does this by creating a virtualized list of elements based on the
+ * `renderItemAtIndex` function passed in which is in charge of rendering the
+ * appropriate `<CarouselItem>` give an arbitrary index. With a fully
+ * virtualized list, we can make sure there are always enough elements to fill
+ * the screen.
+ *
+ * The component itself tries to be as dumb as possible. It does have an
+ * internal index that is used to track the current index of the virtualized
+ * list. Any time the parent component changes the current index, the container
+ * will animate to the nearest virtual index that maps to the real index.
+ *
+ * On internal swipes and drags, the container will animate and update its
+ * internal state before calling the parent component's onChangeIndex function
+ * -- only committing the change after the action is complete.
+ *
+ * ```tsx
+ * import { Carousel, CarouselItem } from '@betaorbust/react-carousel';
+ * import { useState, useCallback } from 'react';
+ *
+ * const plans = ['Basic', 'Premium', 'Ultimate', 'Enterprise'];
+ * const width = 200;
+ *
+ * const Demo = () => {
+ * 	// Index is controlled outside of the component so we can
+ * 	// have multiple controls -- like a navigation, button or
+ * 	// other carousel -- all managing the same state.
+ * 	const [currentIndex, setCurrentIndex] = useState(0);
+ *
+ * 	// How to render a card at any given index
+ * 	const renderItemAtIndex = useCallback(
+ * 		// You get the real index and the virtual index
+ * 		(index, virtualIndex) => {
+ * 			const name = plans[index];
+ * 			return (
+ * 				// Wrap in a CarouselItem and Style to have the
+ * 				// width provided to the Carousel
+ * 				<CarouselItem itemKey={`${name}-{virtualIndex}`}>
+ * 					<div style={{ width: `${width}px` }}>
+ * 						{name} at virtual index {virtualIndex}
+ * 					</div>
+ * 				</CarouselItem>
+ * 			);
+ * 		},
+ * 		[plans],
+ * 	);
+ *
+ * 	return (
+ * 		<Carousel
+ * 			animationDurationMs={500}
+ * 			currentIndex={currentIndex}
+ * 			itemCount={plans.length}
+ * 			itemWidth={width}
+ * 			onClickIndex={setCurrentIndex}
+ * 			preventScrolling={true}
+ * 			renderItemAtIndex={renderItemAtIndex}
+ * 			swipeMaxDurationMs={500}
+ * 			swipeMinDistancePx={10}
+ * 			virtualListSize={plans.length * 3}
+ * 		/>
+ * 	);
+ * };
+ * ```
+ */
 export const Carousel: React.FC<CarouselProps> = ({
-	onClickIndex: onChange,
+	animationDurationMs,
 	currentIndex,
-	renderItemAtIndex,
 	itemCount,
 	itemWidth,
-	animationDurationMs,
+	onClickIndex: onChange,
+	preventScrolling,
+	renderItemAtIndex,
 	swipeMaxDurationMs,
 	swipeMinDistancePx,
 	virtualListSize,
-	preventScrolling,
 }) => {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const shifterRef = useRef<HTMLDivElement | null>(null);
@@ -231,17 +292,17 @@ export const Carousel: React.FC<CarouselProps> = ({
 			// If it was a tap, we don't want to update the index at all, as the
 			// click handler will do that for us.
 			if (Math.abs(delta) < swipeMinDistancePx) {
-				console.log('tap detected');
+				// console.log('tap detected');
 			} else {
 				setTransitionPhase('move');
 				// It was a drag
-				console.log('drag detected');
+				// console.log('drag detected');
 				// If we dragged only a little bit, but did it quickly
 				// we call that a swipe, and add an offset in the direction
 				// of the swipe.
 				let swipeOffset = 0;
 				if (deltaUnits === 0 && duration < swipeMaxDurationMs) {
-					console.log('swipe detected');
+					// console.log('swipe detected');
 					swipeOffset = delta > 0 ? 1 : -1;
 				}
 
@@ -345,6 +406,7 @@ export const Carousel: React.FC<CarouselProps> = ({
 					startIndex={startIndex}
 					endIndex={endIndex}
 					currentOverallIndex={internalIndex}
+					totalBaseItems={itemCount}
 					renderItemAtIndex={renderItemAtIndex}
 				/>
 			</div>

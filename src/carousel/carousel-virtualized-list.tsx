@@ -1,6 +1,7 @@
 /* @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import React from 'react';
+import { getRealIndex } from './helpers';
 
 type CarouselElementWrapperProps = {
 	children: React.ReactNode;
@@ -37,7 +38,11 @@ const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 );
 
 type CarouselVirtualizedListProps = {
-	renderItemAtIndex: (index: number) => React.ReactElement;
+	totalBaseItems: number;
+	renderItemAtIndex: (
+		index: number,
+		virtualIndex: number,
+	) => React.ReactElement;
 	startIndex: number;
 	endIndex: number;
 	currentOverallIndex: number;
@@ -48,6 +53,7 @@ type CarouselVirtualizedListProps = {
 export const CarouselVirtualizedList: React.FC<
 	CarouselVirtualizedListProps
 > = ({
+	totalBaseItems,
 	renderItemAtIndex,
 	currentOverallIndex,
 	startIndex,
@@ -70,7 +76,10 @@ export const CarouselVirtualizedList: React.FC<
 					index={currentIndex}
 					width={itemWidth}
 				>
-					{renderItemAtIndex(startIndex + i)}
+					{renderItemAtIndex(
+						getRealIndex(startIndex + i, totalBaseItems),
+						startIndex + i,
+					)}
 				</CarouselElementWrapper>
 			);
 		});
