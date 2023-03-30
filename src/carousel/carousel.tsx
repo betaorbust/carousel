@@ -317,41 +317,37 @@ export const Carousel: React.FC<CarouselProps> = ({
 			? `transform ${animationDurationMs / 1000}s ease-out`
 			: 'none';
 	return (
-		<>
+		<div
+			// This entire component is hidden from screen readers and keyboard
+			// navigation because the infinite virtual list of buttons is a terrible
+			// user experience. Instead, the lower carousel navigation is focusable
+			// and aria labels that match the contents of this component's children.
+			aria-hidden
+			// eslint-disable-next-line react/jsx-props-no-spreading
+			{...swipeableHandlers}
+			ref={refPassthrough}
+			css={wrapperStyles}
+		>
 			<div
-				// This entire component is hidden from screen readers and keyboard
-				// navigation because the infinite virtual list of buttons is a terrible
-				// user experience. Instead, the lower carousel navigation is focusable
-				// and aria labels that match the contents of this component's children.
-				aria-hidden
-				// eslint-disable-next-line react/jsx-props-no-spreading
-				{...swipeableHandlers}
-				ref={refPassthrough}
-				css={wrapperStyles}
+				ref={shifterRef}
+				css={shifterStyles}
+				onMouseMove={onManualMove}
+				onTouchMove={onManualMove}
+				style={{
+					transition,
+					transform,
+					// touchAction,
+				}}
 			>
-				<div
-					ref={shifterRef}
-					css={shifterStyles}
-					onMouseMove={onManualMove}
-					onTouchMove={onManualMove}
-					style={{
-						transition,
-						transform,
-						// touchAction,
-					}}
-				>
-					<CarouselVirtualizedList
-						itemWidth={itemWidth}
-						onClickIndex={onClickIndex}
-						startIndex={startIndex}
-						endIndex={endIndex}
-						currentOverallIndex={internalIndex}
-						renderItemAtIndex={renderItemAtIndex}
-					/>
-				</div>
+				<CarouselVirtualizedList
+					itemWidth={itemWidth}
+					onClickIndex={onClickIndex}
+					startIndex={startIndex}
+					endIndex={endIndex}
+					currentOverallIndex={internalIndex}
+					renderItemAtIndex={renderItemAtIndex}
+				/>
 			</div>
-			<p>Phase: {transitionPhase}</p>
-			<p>internal index: {internalIndex}</p>
-		</>
+		</div>
 	);
 };

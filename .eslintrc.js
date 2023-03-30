@@ -1,11 +1,24 @@
+require('@rushstack/eslint-patch/modern-module-resolution');
+
 module.exports = {
-	root: true, // stop looking for config files in parent directories
-	extends: ['@betaorbust/eslint-config/profiles/web-app'],
-	parserOptions: { tsconfigRootDir: __dirname },
+	root: true,
+	// stop looking for config files in parent directories
+	extends: [
+		'@betaorbust/eslint-config/profiles/web-app',
+		'plugin:storybook/recommended',
+	],
+	parserOptions: {
+		tsconfigRootDir: __dirname,
+	},
 	rules: {
 		'import/prefer-default-export': 'off',
 		'no-console': 'off',
-		'react/no-unknown-property': ['error', { ignore: ['css'] }],
+		'react/no-unknown-property': [
+			'error',
+			{
+				ignore: ['css'],
+			},
+		],
 		'react/function-component-definition': [
 			'error',
 			{
@@ -17,11 +30,23 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ['*.test.ts', '*.test.tsx'],
+			files: [
+				'*.test.ts',
+				'*.test.tsx',
+				'.eslintrc.js',
+				'**/*.story.tsx',
+			],
 			rules: {
 				'import/no-extraneous-dependencies': [
 					'error',
-					{ devDependencies: ['**/*.test.ts', '**/*.test.tsx'] },
+					{
+						devDependencies: [
+							'**/*.test.ts',
+							'**/*.test.tsx',
+							'.eslintrc.js',
+							'**/*.story.tsx',
+						],
+					},
 				],
 			},
 		},
