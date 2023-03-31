@@ -87,13 +87,11 @@ export const makeRenderItem = ({
 }: Pick<
 	ComponentProps<typeof Carousel>,
 	'animationDurationMs' | 'itemWidth'
->) => {
-	return (index: number): React.ReactElement => {
-		// Pick a plan based on the index of the item in the carousel.
-		const planIndex = getRealIndex(index, plans.length);
-		const { name, price } = plans[planIndex];
+>): React.ComponentProps<typeof Carousel>['renderItemAtIndex'] => {
+	return (index, virtualIndex): React.ReactElement => {
+		const { name, price } = plans[index];
 		return (
-			<CarouselItem key={name} itemKey={name}>
+			<CarouselItem itemKey={`${name}-virtualIndex`}>
 				<div
 					css={elementStyles}
 					style={{
@@ -109,7 +107,7 @@ export const makeRenderItem = ({
 					<div>
 						<h3>{name}</h3>
 						<sub>{price}</sub>
-						<div css={indexStyle}>{index}</div>
+						<div css={indexStyle}>{virtualIndex}</div>
 					</div>
 				</div>
 			</CarouselItem>
