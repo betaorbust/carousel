@@ -8,7 +8,7 @@
 		"react",
 		"carousel"
 	],
-	"type": "module",
+	"type": "commonjs",
 	"main": "dist/carousel/index.js",
 	"files": [
 		"README.md",
