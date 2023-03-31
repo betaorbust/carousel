@@ -11,6 +11,7 @@ module.exports = {
 		tsconfigRootDir: __dirname,
 		project: ['./tsconfig.eslint.json'],
 	},
+	ignorePatterns: ['/node_modules/**', '/dist/**', '/storybook-static/**'],
 	rules: {
 		'import/prefer-default-export': 'off',
 		'react/no-unknown-property': [
@@ -29,28 +30,16 @@ module.exports = {
 		'react/no-unescaped-entities': 'off',
 		'react/jsx-props-no-spreading': 'off',
 		'react/prop-types': 'off',
-	},
-	overrides: [
-		{
-			files: [
-				'*.test.ts',
-				'*.test.tsx',
-				'.eslintrc.js',
-				'**/*.stories.tsx',
-			],
-			rules: {
-				'import/no-extraneous-dependencies': [
-					'error',
-					{
-						devDependencies: [
-							'**/*.test.ts',
-							'**/*.test.tsx',
-							'.eslintrc.js',
-							'**/*.stories.tsx',
-						],
-					},
+		'import/no-extraneous-dependencies': [
+			'error',
+			{
+				devDependencies: [
+					'**/*.test.ts',
+					'**/*.test.tsx',
+					'.eslintrc.cjs',
+					'**/*.stories.tsx',
 				],
 			},
-		},
-	],
+		],
+	},
 };

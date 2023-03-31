@@ -1,6 +1,6 @@
 {
 	"name": "@betaorbust/carousel",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"description": "Carousel",
 	"homepage": "https://betaorbust.github.io/carousel",
 	"keywords": [
@@ -10,14 +10,19 @@
 	],
 	"type": "module",
 	"main": "dist/carousel/index.js",
+	"files": [
+		"README.md",
+		"dist"
+	],
 	"scripts": {
 		"build": "rm -rf ./dist && tsc",
 		"test": "jest",
 		"format": "prettier --loglevel warn --write \"**/*.{js,ts,jsx,tsx,mdx,vue,json,json5,yaml,md,html,less,sass,css,gql}\"",
 		"prepare": "husky install",
-		"lint": "eslint ./",
+		"lint": "eslint ./ --ignore-path .gitignore",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"prepublishOnly": "npm install && npm run test && npm run lint && npm run build"
 	},
 	"dependencies": {
 		"react-swipeable": "7.0.0",
