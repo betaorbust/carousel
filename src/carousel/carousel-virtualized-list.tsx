@@ -8,20 +8,19 @@ type CarouselElementWrapperProps = {
 	isCurrent: boolean;
 	identifier: string;
 	index: number;
-	width: number;
 	onClickIndex: (index: number) => void;
 };
 
 const elementStyle = css`
 	align-items: stretch;
 	flex: 1 1 auto;
+	display: flex;
 `;
 
 const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 	children,
 	isCurrent,
 	index,
-	width,
 	identifier,
 	onClickIndex,
 }) => (
@@ -30,7 +29,6 @@ const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 		data-virtual-index={identifier}
 		className={isCurrent ? 'current' : undefined}
 		css={elementStyle}
-		style={{ width: `${width}px` }}
 		onClick={(): void => onClickIndex(index)}
 	>
 		{children}
@@ -47,7 +45,6 @@ type CarouselVirtualizedListProps = {
 	endIndex: number;
 	currentOverallIndex: number;
 	onClickIndex: CarouselElementWrapperProps['onClickIndex'];
-	itemWidth: number;
 };
 
 export const CarouselVirtualizedList: React.FC<
@@ -59,7 +56,6 @@ export const CarouselVirtualizedList: React.FC<
 	startIndex,
 	endIndex,
 	onClickIndex,
-	itemWidth,
 }) => {
 	// Don't know if shakti polyfills Array.from, so we'll use the old way
 	// eslint-disable-next-line unicorn/no-new-array
@@ -74,7 +70,6 @@ export const CarouselVirtualizedList: React.FC<
 					isCurrent={currentIndex === currentOverallIndex}
 					onClickIndex={onClickIndex}
 					index={currentIndex}
-					width={itemWidth}
 				>
 					{renderItemAtIndex(
 						getRealIndex(startIndex + i, totalBaseItems),

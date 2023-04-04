@@ -9,12 +9,12 @@ const elementStyles = css`
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 25%;
+	padding: 20%;
 	border: solid 1px gray;
 	border-radius: 6%;
 	box-sizing: border-box;
 	overflow: hidden;
-	margin: 5% 3%;
+	margin: 10% 3%;
 	opacity: 0.5;
 	// This is set unrealistically high so that the animation barely starts
 	// before we supersede the transition with the on-element style
@@ -31,7 +31,7 @@ const elementStyles = css`
 		),
 		#1d529d;
 	.current & {
-		transform: scale(1.1);
+		transform: scale(1.15);
 		opacity: 1;
 		z-index: 1000;
 	}
@@ -72,7 +72,7 @@ const plans = [
 		price: '$10.00',
 	},
 	{
-		name: `3. Please don't pick this one`,
+		name: `3. Please don't pick this one it's really long and it'll take up a ton of space`,
 		price: '$5.99',
 	},
 ];
@@ -95,8 +95,6 @@ export const makeRenderItem = ({
 				<div
 					css={elementStyles}
 					style={{
-						width: `${itemWidth}px`,
-						height: `${itemWidth}px`,
 						transition: `transform ${
 							animationDurationMs / 1000
 						}s ease-in-out, opacity ${

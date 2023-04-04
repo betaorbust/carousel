@@ -16,6 +16,7 @@ import {
 	getRealIndex,
 	getNearestVirtualIndexMappingToReal,
 } from './helpers';
+import { CarouselWidthContext } from './carousel-width-context';
 
 type CarouselProps = {
 	/** What to do when a user clicks on a carousel item. */
@@ -49,6 +50,7 @@ const wrapperStyles = css`
 
 const shifterStyles = css`
 	display: flex;
+	justify-content: stretch;
 `;
 
 const preventDefault = (e: Event): void => {
@@ -79,7 +81,6 @@ const preventDefault = (e: Event): void => {
  * import { useState, useCallback } from 'react';
  *
  * const plans = ['Basic', 'Premium', 'Ultimate', 'Enterprise'];
- * const width = 200;
  *
  * const Demo = () => {
  * 	// Index is controlled outside of the component so we can
@@ -93,12 +94,9 @@ const preventDefault = (e: Event): void => {
  * 		(index, virtualIndex) => {
  * 			const name = plans[index];
  * 			return (
- * 				// Wrap in a CarouselItem and Style to have the
- * 				// width provided to the Carousel
+ * 				// Wrap in a CarouselItem
  * 				<CarouselItem itemKey={`${name}-{virtualIndex}`}>
- * 					<div style={{ width: `${width}px` }}>
- * 						{name} at virtual index {virtualIndex}
- * 					</div>
+ * 					{name} at virtual index {virtualIndex}
  * 				</CarouselItem>
  * 			);
  * 		},
@@ -110,7 +108,7 @@ const preventDefault = (e: Event): void => {
  * 			animationDurationMs={500}
  * 			currentIndex={currentIndex}
  * 			itemCount={plans.length}
- * 			itemWidth={width}
+ * 			itemWidth={200}
  * 			onClickIndex={setCurrentIndex}
  * 			preventScrolling={true}
  * 			renderItemAtIndex={renderItemAtIndex}
@@ -402,15 +400,16 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 						// touchAction,
 					}}
 				>
-					<CarouselVirtualizedList
-						itemWidth={itemWidth}
-						onClickIndex={onClickIndex}
-						startIndex={startIndex}
-						endIndex={endIndex}
-						currentOverallIndex={internalIndex}
-						totalBaseItems={itemCount}
-						renderItemAtIndex={renderItemAtIndex}
-					/>
+					<CarouselWidthContext.Provider value={itemWidth}>
+						<CarouselVirtualizedList
+							onClickIndex={onClickIndex}
+							startIndex={startIndex}
+							endIndex={endIndex}
+							currentOverallIndex={internalIndex}
+							totalBaseItems={itemCount}
+							renderItemAtIndex={renderItemAtIndex}
+						/>
+					</CarouselWidthContext.Provider>
 				</div>
 			</div>
 		);
