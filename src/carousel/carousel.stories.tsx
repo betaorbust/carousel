@@ -80,6 +80,7 @@ Basic.args = {
 	preventScrolling: true,
 	swipeMaxDurationMs: 500,
 	swipeMinDistancePx: 50,
+	dir: 'ltr',
 };
 
 /**
@@ -115,7 +116,8 @@ Basic.args = {
  * ```
  */
 export const WithControls: StoryFn<typeof Carousel> = (args) => {
-	const { currentIndex, onClickIndex, itemWidth, animationDurationMs } = args;
+	const { currentIndex, onClickIndex, itemWidth, animationDurationMs, dir } =
+		args;
 	const [internalCurrentIndex, internalOnClickIndex] = useSharedIndex(
 		currentIndex,
 		onClickIndex,
@@ -138,6 +140,7 @@ export const WithControls: StoryFn<typeof Carousel> = (args) => {
 				currentIndex={internalCurrentIndex}
 				indexLabels={indexLabels}
 				onChange={internalOnClickIndex}
+				dir={dir}
 			/>
 		</>
 	);
@@ -145,7 +148,8 @@ export const WithControls: StoryFn<typeof Carousel> = (args) => {
 WithControls.args = Basic.args;
 
 export const WithLinkedCarousels: StoryFn<typeof Carousel> = (args) => {
-	const { currentIndex, onClickIndex, itemWidth, animationDurationMs } = args;
+	const { currentIndex, onClickIndex, itemWidth, animationDurationMs, dir } =
+		args;
 	const [internalCurrentIndex, internalOnClickIndex] = useSharedIndex(
 		currentIndex,
 		onClickIndex,
@@ -168,6 +172,7 @@ export const WithLinkedCarousels: StoryFn<typeof Carousel> = (args) => {
 				currentIndex={internalCurrentIndex}
 				indexLabels={indexLabels}
 				onChange={internalOnClickIndex}
+				dir={dir}
 			/>
 			<Carousel
 				{...args}

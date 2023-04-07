@@ -5,9 +5,9 @@ import { getRealIndex } from './helpers';
 
 type CarouselElementWrapperProps = {
 	children: React.ReactNode;
-	isCurrent: boolean;
 	identifier: string;
 	index: number;
+	isCurrent: boolean;
 	onClickIndex: (index: number) => void;
 };
 
@@ -50,12 +50,12 @@ type CarouselVirtualizedListProps = {
 export const CarouselVirtualizedList: React.FC<
 	CarouselVirtualizedListProps
 > = ({
-	totalBaseItems,
-	renderItemAtIndex,
 	currentOverallIndex,
-	startIndex,
 	endIndex,
 	onClickIndex,
+	renderItemAtIndex,
+	startIndex,
+	totalBaseItems,
 }) => {
 	// Don't know if shakti polyfills Array.from, so we'll use the old way
 	// eslint-disable-next-line unicorn/no-new-array

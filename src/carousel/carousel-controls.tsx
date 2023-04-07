@@ -6,6 +6,7 @@ type CarouselControlsTypes = {
 	indexLabels: string[];
 	onChange: (index: number) => void;
 	currentIndex: number;
+	dir: 'ltr' | 'rtl';
 };
 
 const containerStyles = css`
@@ -54,8 +55,9 @@ export const CarouselControls: React.FC<CarouselControlsTypes> = ({
 	indexLabels,
 	onChange,
 	currentIndex,
+	dir,
 }) => (
-	<div css={containerStyles}>
+	<div css={containerStyles} dir={dir}>
 		<button
 			css={controlsStyles}
 			type="button"
@@ -68,7 +70,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> = ({
 				)
 			}
 		>
-			◀
+			{dir === 'ltr' ? '◀' : '▶'}
 		</button>
 		{indexLabels.map((label, index) => (
 			<button
@@ -98,7 +100,7 @@ export const CarouselControls: React.FC<CarouselControlsTypes> = ({
 				)
 			}
 		>
-			▶
+			{dir === 'ltr' ? '▶' : '◀'}
 		</button>
 	</div>
 );

@@ -82,7 +82,6 @@ export const makeIndexLabels = () => {
 };
 
 export const makeRenderItem = ({
-	itemWidth,
 	animationDurationMs,
 }: Pick<
 	ComponentProps<typeof Carousel>,

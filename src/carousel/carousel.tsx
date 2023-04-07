@@ -19,6 +19,7 @@ import {
 import { CarouselWidthContext } from './carousel-width-context';
 
 type CarouselProps = {
+	dir: 'ltr' | 'rtl';
 	/** What to do when a user clicks on a carousel item. */
 	onClickIndex: (index: number) => void;
 	/** The real index in the carousel to show. */
@@ -115,6 +116,7 @@ const preventDefault = (e: Event): void => {
  * 			swipeMaxDurationMs={500}
  * 			swipeMinDistancePx={10}
  * 			virtualListSize={plans.length * 3}
+ * 			dir={'ltr'}
  * 		/>
  * 	);
  * };
@@ -132,6 +134,7 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 		swipeMaxDurationMs,
 		swipeMinDistancePx,
 		virtualListSize,
+		dir,
 	}) => {
 		const wrapperRef = useRef<HTMLDivElement | null>(null);
 		const shifterRef = useRef<HTMLDivElement | null>(null);
@@ -155,6 +158,7 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 			touchXStart: 0,
 			carouselInitialOffset: 0,
 		});
+		const dirMultiplier = dir === 'ltr' ? 1 : -1;
 
 		// Re-render on window sizing changes.
 		const windowSize = useWindowSize();
@@ -287,7 +291,8 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 				const { touchXStart, touchXLast, startTime } =
 					interactionRef.current;
 				const delta = touchXStart - touchXLast;
-				const deltaUnits = Math.round(delta / itemWidth);
+				const deltaUnits =
+					Math.round(delta / itemWidth) * dirMultiplier;
 				const duration = Date.now() - startTime;
 
 				// Tap: < 10px movement no time limit
@@ -298,13 +303,13 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 					// as the click handler will do that for us.
 				} else {
 					setTransitionPhase('move');
-					// It was a drag
+					// It was a drag or swipe
 					// If we dragged only a little bit, but did it quickly
 					// we call that a swipe, and add an offset in the direction
 					// of the swipe.
 					let swipeOffset = 0;
 					if (deltaUnits === 0 && duration < swipeMaxDurationMs) {
-						swipeOffset = delta > 0 ? 1 : -1;
+						swipeOffset = (delta > 0 ? 1 : -1) * dirMultiplier;
 					}
 
 					const newInternalIndex =
@@ -364,7 +369,7 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 				);
 			},
 			// Update between phases and any time the window size changes
-			[internalIndex, transitionPhase, windowSize, itemWidth],
+			[internalIndex, transitionPhase, windowSize, itemWidth, dir],
 		);
 
 		// We only use the css transition for transform when we're letting
@@ -384,11 +389,11 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 				// user experience. Instead, the lower carousel navigation is focusable
 				// and aria labels that match the contents of this component's children.
 				aria-hidden
+				dir={dir}
 				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...swipeableHandlers}
 				ref={refPassthrough}
-				css={wrapperStyles}
-			>
+				css={wrapperStyles}>
 				<div
 					ref={shifterRef}
 					css={shifterStyles}
@@ -398,8 +403,7 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 						transition,
 						transform,
 						// touchAction,
-					}}
-				>
+					}}>
 					<CarouselWidthContext.Provider value={itemWidth}>
 						<CarouselVirtualizedList
 							onClickIndex={onClickIndex}
