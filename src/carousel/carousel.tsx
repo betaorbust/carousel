@@ -346,12 +346,25 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 		const onClickIndex = useCallback(
 			(index: number) => {
 				// Don't bother to re-render if we're already on the index
-				if (transitionPhase !== 'rest' || index === currentIndex) {
+				if (transitionPhase !== 'rest') {
 					return;
 				}
-				onChange(getRealIndex(index, itemCount));
+				const newRealIndex = getRealIndex(index, itemCount);
+				// if (index === currentIndex && shifterRef.current) {
+				// 	setTimeout(() => {
+				// 		if (!shifterRef.current) return;
+				// 		console.log('setting back!');
+				// 		shifterRef.current.style.transform = `translateX(${positionCurrentIndex(
+				// 			internalIndex,
+				// 			shifterRef,
+				// 			wrapperRef,
+				// 		)}px)`;
+				// 		shifterRef.current.style.border = '10px solid red';
+				// 	}, 10);
+				// }
+				onChange(newRealIndex);
 			},
-			[itemCount, onChange, currentIndex, transitionPhase],
+			[itemCount, onChange, transitionPhase],
 		);
 
 		// Calculate the transform to apply to the shifter element
@@ -360,16 +373,29 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 		// list until after the first render.
 		useLayoutEffect(
 			() => {
-				setTransform(
-					`translateX(${positionCurrentIndex(
+				const shift =
+					positionCurrentIndex(
 						internalIndex,
 						shifterRef,
 						wrapperRef,
-					)}px)`,
-				);
+					) +
+					// The random number is to force a re-render
+					// of the actual dom because we modify the transform
+					// outside of react during manual dragging, so react
+					// doesn't know the dom has changed, and doesn't re-print
+					// to it.
+					Math.random() / 10_000;
+				setTransform(`translateX(${shift}px)`);
 			},
 			// Update between phases and any time the window size changes
-			[internalIndex, transitionPhase, windowSize, itemWidth, dir],
+			[
+				internalIndex,
+				transitionPhase,
+				windowSize,
+				itemWidth,
+				dir,
+				manuallyDragging,
+			],
 		);
 
 		// We only use the css transition for transform when we're letting
@@ -393,7 +419,8 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...swipeableHandlers}
 				ref={refPassthrough}
-				css={wrapperStyles}>
+				css={wrapperStyles}
+			>
 				<div
 					ref={shifterRef}
 					css={shifterStyles}
@@ -403,7 +430,8 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 						transition,
 						transform,
 						// touchAction,
-					}}>
+					}}
+				>
 					<CarouselWidthContext.Provider value={itemWidth}>
 						<CarouselVirtualizedList
 							onClickIndex={onClickIndex}
