@@ -425,11 +425,6 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 				: 'none';
 		return (
 			<div
-				// This entire component is hidden from screen readers and keyboard
-				// navigation because the infinite virtual list of buttons is a terrible
-				// user experience. Instead, the lower carousel navigation is focusable
-				// and aria labels that match the contents of this component's children.
-				aria-hidden
 				dir={dir}
 				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...swipeableHandlers}
