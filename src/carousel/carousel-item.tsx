@@ -30,12 +30,7 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({
 		return { width: `${itemWidth}px` };
 	}, [itemWidth]);
 	return (
-		<div
-			aria-hidden
-			css={carouselItemStyle}
-			style={itemStyle}
-			key={itemKey}
-		>
+		<div css={carouselItemStyle} style={itemStyle} key={itemKey}>
 			{children}
 		</div>
 	);

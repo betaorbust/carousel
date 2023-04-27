@@ -8,6 +8,7 @@ type CarouselElementWrapperProps = {
 	identifier: string;
 	index: number;
 	isCurrent: boolean;
+	isShownToScreenReaders: boolean;
 	onClickIndex: (index: number) => void;
 };
 
@@ -20,12 +21,15 @@ const elementStyle = css`
 const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 	children,
 	isCurrent,
+	isShownToScreenReaders,
 	index,
 	identifier,
 	onClickIndex,
 }) => (
+	// Keyboard navigation is handled by the Navigation Buttons
+	// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 	<div
-		aria-hidden
+		aria-hidden={!isShownToScreenReaders}
 		data-virtual-index={identifier}
 		className={isCurrent ? 'current' : undefined}
 		css={elementStyle}
@@ -35,7 +39,7 @@ const CarouselElementWrapper: React.FC<CarouselElementWrapperProps> = ({
 	</div>
 );
 
-type CarouselVirtualizedListProps = {
+export type CarouselVirtualizedListProps = {
 	totalBaseItems: number;
 	renderItemAtIndex: (
 		index: number,
@@ -45,6 +49,7 @@ type CarouselVirtualizedListProps = {
 	endIndex: number;
 	currentOverallIndex: number;
 	onClickIndex: CarouselElementWrapperProps['onClickIndex'];
+	itemsToScreenReaders: 'none' | 'current';
 };
 
 export const CarouselVirtualizedList: React.FC<
@@ -56,6 +61,7 @@ export const CarouselVirtualizedList: React.FC<
 	renderItemAtIndex,
 	startIndex,
 	totalBaseItems,
+	itemsToScreenReaders,
 }) => {
 	// Don't know if shakti polyfills Array.from, so we'll use the old way
 	// eslint-disable-next-line unicorn/no-new-array
@@ -63,11 +69,15 @@ export const CarouselVirtualizedList: React.FC<
 		.fill('')
 		.map((_, i) => {
 			const currentIndex = startIndex + i;
+			const isCurrent = currentIndex === currentOverallIndex;
 			return (
 				<CarouselElementWrapper
 					key={currentIndex}
 					identifier={`${currentIndex}`}
-					isCurrent={currentIndex === currentOverallIndex}
+					isCurrent={isCurrent}
+					isShownToScreenReaders={
+						itemsToScreenReaders === 'current' && isCurrent
+					}
 					onClickIndex={onClickIndex}
 					index={currentIndex}
 				>

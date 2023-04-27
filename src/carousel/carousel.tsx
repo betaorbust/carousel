@@ -10,7 +10,10 @@ import React, {
 import { css } from '@emotion/react';
 import { useSwipeable } from 'react-swipeable';
 import { useWindowSize } from 'usehooks-ts';
-import { CarouselVirtualizedList } from './carousel-virtualized-list';
+import {
+	CarouselVirtualizedList,
+	CarouselVirtualizedListProps,
+} from './carousel-virtualized-list';
 import {
 	positionCurrentIndex,
 	getRealIndex,
@@ -37,11 +40,22 @@ type CarouselProps = {
 	/** Min swipe distance. Before this, it's a tap. */
 	swipeMinDistancePx: number;
 	/** How to render a card at any given index */
-	renderItemAtIndex: React.ComponentProps<
-		typeof CarouselVirtualizedList
-	>['renderItemAtIndex'];
+	renderItemAtIndex: CarouselVirtualizedListProps['renderItemAtIndex'];
 	/** Whether to prevent scrolling on the page when swiping or dragging. */
 	preventScrolling: boolean;
+	/**
+	 * Because it's an infinite vitualized list, interaction with screen readers
+	 * is not great. This allows you to choose which items are available to
+	 * screen readers. All others will be hidden with `aria-hidden`.
+	 *
+	 * - `none`: No items are available to screen readers. Use this for situations
+	 *   where you have a separate screen reader friendly implementation or
+	 *   otherwise do not want the carousel to be read.
+	 * - `current`: Only the current item is available to screen readers. All
+	 *   others are hidden. Best in situations where the carousel is being used
+	 *   as the content of a tabbed interface.
+	 */
+	itemsToScreenReaders: CarouselVirtualizedListProps['itemsToScreenReaders'];
 };
 
 const wrapperStyles = css`
@@ -126,7 +140,9 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 	({
 		animationDurationMs,
 		currentIndex,
+		dir,
 		itemCount,
+		itemsToScreenReaders,
 		itemWidth,
 		onClickIndex: onChange,
 		preventScrolling,
@@ -134,7 +150,6 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 		swipeMaxDurationMs,
 		swipeMinDistancePx,
 		virtualListSize,
-		dir,
 	}) => {
 		const wrapperRef = useRef<HTMLDivElement | null>(null);
 		const shifterRef = useRef<HTMLDivElement | null>(null);
@@ -434,6 +449,7 @@ export const Carousel: React.FC<CarouselProps> = React.memo(
 				>
 					<CarouselWidthContext.Provider value={itemWidth}>
 						<CarouselVirtualizedList
+							itemsToScreenReaders={itemsToScreenReaders}
 							onClickIndex={onClickIndex}
 							startIndex={startIndex}
 							endIndex={endIndex}

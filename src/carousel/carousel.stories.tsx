@@ -81,6 +81,7 @@ Basic.args = {
 	swipeMaxDurationMs: 500,
 	swipeMinDistancePx: 50,
 	dir: 'ltr',
+	itemsToScreenReaders: 'none',
 };
 
 /**
